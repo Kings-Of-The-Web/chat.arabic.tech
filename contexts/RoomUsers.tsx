@@ -2,14 +2,15 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { getRoom } from '@/lib/service/getRoom';
+import { getUsersByIds } from '@/lib/service/getUsersByIds';
 
 interface RoomUsersContextType {
-  userIds: string[];
+  users: App.User[];
   isLoading: boolean;
 }
 
 const RoomUsersContext = createContext<RoomUsersContextType>({
-  userIds: [],
+  users: [],
   isLoading: true,
 });
 
@@ -22,24 +23,29 @@ export function RoomUsersProvider({
   children: React.ReactNode;
   roomId: string;
 }) {
-  const [userIds, setUserIds] = useState<string[]>([]);
+  const [users, setUsers] = useState<App.User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const room = await getRoom(roomId);
-        setUserIds(room.userIds);
+        if (room.users) {
+          setUsers(room.users);
+        } else {
+          const users = await getUsersByIds(room.userIds);
+          console.log(users)
+          setUsers(users);
+        }
       } catch (error) {
         console.error('Error fetching room users:', error);
-        setUserIds([]);
+        setUsers([]);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUsers();
-    // Set up polling to refresh users every 5 seconds
     const interval = setInterval(fetchUsers, 5000);
 
     return () => {
@@ -48,7 +54,7 @@ export function RoomUsersProvider({
   }, [roomId]);
 
   return (
-    <RoomUsersContext.Provider value={{ userIds, isLoading }}>
+    <RoomUsersContext.Provider value={{ users, isLoading }}>
       {children}
     </RoomUsersContext.Provider>
   );

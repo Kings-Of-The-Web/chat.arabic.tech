@@ -16,14 +16,48 @@ const CURRENT_USER_ID = 'current-user';
 const SYSTEM_USER_ID = 'system';
 
 export default function ChatRoom() {
+
+  ////////////////////////
+  // State Variables
+  ////////////////////////
+  const [messages, setMessages] = useState<App.Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  ////////////////////////
+  // Contexts
+  ////////////////////////
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();
-  const [messages, setMessages] = useState<App.Message[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+
+
+
+  ////////////////////////
+  // Refs
+  ////////////////////////
   const scrollRef = useRef<HTMLDivElement>(null);
   const roomId = params.roomId as string;
 
+
+  ////////////////////////
+  // Handlers
+  ////////////////////////
+  const handleSendMessage = async (newMessage: string) => {
+    const message: App.Message = {
+      messageId: Date.now().toString(),
+      body: newMessage,
+      userId: CURRENT_USER_ID,
+      timestamp: new Date(),
+      isRead: false
+    };
+
+    setMessages(prev => [...prev, message]);
+  };
+
+
+  /////////////////////////
+  // Effects
+  /////////////////////////
   // Join room when component mounts
   useEffect(() => {
     const handleJoinRoom = async () => {
@@ -36,34 +70,9 @@ export default function ChatRoom() {
         router.push('/');
       }
     };
-
     handleJoinRoom();
   }, [roomId, user?.userId, router]);
 
-  // Simulate fetching initial messages
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setMessages([
-          {
-            messageId: '1',
-            body: 'مرحباً بكم في الغرفة',
-            userId: SYSTEM_USER_ID,
-            timestamp: new Date(),
-            isRead: true
-          }
-        ]);
-        setIsLoading(false);
-      } catch (error) {
-        toast.error('حدث خطأ في تحميل الرسائل');
-        router.push('/');
-      }
-    };
-
-    fetchMessages();
-  }, [roomId, router]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -72,17 +81,7 @@ export default function ChatRoom() {
     }
   }, [messages]);
 
-  const handleSendMessage = async (newMessage: string) => {
-    const message: App.Message = {
-      messageId: Date.now().toString(),
-      body: newMessage,
-      userId: CURRENT_USER_ID,
-      timestamp: new Date(),
-      isRead: false
-    };
 
-    setMessages(prev => [...prev, message]);
-  };
 
   if (isLoading) {
     return (

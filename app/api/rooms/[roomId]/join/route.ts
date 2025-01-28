@@ -18,6 +18,23 @@ export async function POST(
       );
     }
 
+    // Check if user exists and create if not
+    const usersDir = path.join(process.cwd(), 'DB', 'users');
+    await fs.mkdir(usersDir, { recursive: true });
+    const userPath = path.join(usersDir, `${userId}.json`);
+    
+    try {
+      await fs.access(userPath);
+    } catch {
+      // User doesn't exist, create them
+      const user: App.User = {
+        userId,
+        name: 'Anonymous',
+        isOnline: true
+      };
+      await fs.writeFile(userPath, JSON.stringify(user, null, 2));
+    }
+
     // Check if room exists
     const roomsDir = path.join(process.cwd(), 'DB', 'rooms');
     const roomPath = path.join(roomsDir, `${roomId}.json`);
