@@ -24,13 +24,13 @@ export function MessageInput({ roomId }: MessageInputProps) {
     }, [newMessage, user, roomId]);
 
     return (
-            <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
+            <form onSubmit={handleSubmit} className="mt-4 flex flex-row-reverse gap-2">
                 <Input
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="اكتب رسالتك هنا..."
-                        className="flex-1 text-right"
+                        className="flex-1 text-right font-hacen"
                         dir="rtl"
                 />
                 <Button type="submit" className="bg-violet-600 hover:bg-violet-700 text-white">

@@ -12,6 +12,7 @@ import { useUser } from '@/contexts/UserContext';
 import { joinRoom } from '@/lib/service/joinRoom';
 import { RoomUsersProvider } from '@/contexts/RoomUsers';
 import { RoomMessagesProvider, useRoomMessages } from "@/contexts/RoomMessages";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 
 const CURRENT_USER_ID = 'current';
 const SYSTEM_USER_ID = 'system';
@@ -77,19 +78,32 @@ function ChatRoomContent() {
           onBack={() => router.push('/')} 
         />
 
-        <div className="flex-1 flex gap-4">
+        <ResizablePanelGroup 
+          direction="horizontal" 
+          className="flex-1 rounded-lg"
+        >
           {/* Main Chat Area */}
-          <Card className="flex-1 p-4 bg-white dark:bg-gray-800 flex flex-col">
-            <MessageList 
-              ref={scrollRef}
-              messages={messages}
-              currentUserId={user?.userId || ''}
-            />
-            <MessageInput roomId={roomId} />
-          </Card>
+          <ResizablePanel defaultSize={75} minSize={50}>
+            <Card className="h-full p-4 bg-white dark:bg-gray-800 flex flex-col">
+              <MessageList 
+                ref={scrollRef}
+                currentUserId={user?.userId || ''}
+              />
+              <MessageInput roomId={roomId} />
+            </Card>
+          </ResizablePanel>
 
-          <ActiveUsersSidebar />
-        </div>
+          <ResizableHandle withHandle className="bg-violet-200 dark:bg-gray-700 transition-colors" />
+          
+          <ResizablePanel 
+            defaultSize={25} 
+            minSize={15} 
+            maxSize={40}
+            className="transition-transform duration-300 ease-in-out"
+          >
+            <ActiveUsersSidebar />
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </main>
   );
