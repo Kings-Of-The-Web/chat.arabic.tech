@@ -8,6 +8,7 @@ declare module App{
         roomId: string;
         userIds: string[];
         messageIds: string[];
+        users?: User[];
     }
     export interface  Message{
         messageId: string;

@@ -1,11 +1,28 @@
 import { Users } from 'lucide-react';
 import { Card } from "@/components/ui/card";
+import { useRoomUsers } from '@/contexts/RoomUsers';
 
-interface ActiveUsersSidebarProps {
-  users: App.User[];
-}
+export function ActiveUsersSidebar() {
+  const { users, isLoading } = useRoomUsers();
 
-export function ActiveUsersSidebar({ users }: ActiveUsersSidebarProps) {
+  if (isLoading) {
+    return (
+      <Card className="hidden md:block w-64 p-4 bg-white dark:bg-gray-800">
+        <div className="flex items-center gap-2 mb-4">
+          <Users className="h-5 w-5 text-violet-500 dark:text-violet-400" />
+          <h2 className="font-hacen font-bold text-gray-900 dark:text-white">
+            المستخدمون النشطون
+          </h2>
+        </div>
+        <div className="space-y-2">
+          <div className="animate-pulse h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+          <div className="animate-pulse h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+          <div className="animate-pulse h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="hidden md:block w-64 p-4 bg-white dark:bg-gray-800">
       <div className="flex items-center gap-2 mb-4">
