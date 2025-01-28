@@ -11,16 +11,15 @@ import { ActiveUsersSidebar } from '@/components/ChatRoom/ActiveUsersSidebar';
 import { useUser } from '@/contexts/UserContext';
 import { joinRoom } from '@/lib/service/joinRoom';
 import { RoomUsersProvider } from '@/contexts/RoomUsers';
+import { RoomMessagesProvider, useRoomMessages } from "@/contexts/RoomMessages";
 
-const CURRENT_USER_ID = 'current-user';
+const CURRENT_USER_ID = 'current';
 const SYSTEM_USER_ID = 'system';
 
-export default function ChatRoom() {
-
+function ChatRoomContent() {
   ////////////////////////
   // State Variables
   ////////////////////////
-  const [messages, setMessages] = useState<App.Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   ////////////////////////
@@ -29,31 +28,13 @@ export default function ChatRoom() {
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();
-
-
+  const { messages } = useRoomMessages();
 
   ////////////////////////
   // Refs
   ////////////////////////
   const scrollRef = useRef<HTMLDivElement>(null);
   const roomId = params.roomId as string;
-
-
-  ////////////////////////
-  // Handlers
-  ////////////////////////
-  const handleSendMessage = async (newMessage: string) => {
-    const message: App.Message = {
-      messageId: Date.now().toString(),
-      body: newMessage,
-      userId: CURRENT_USER_ID,
-      timestamp: new Date(),
-      isRead: false
-    };
-
-    setMessages(prev => [...prev, message]);
-  };
-
 
   /////////////////////////
   // Effects
@@ -73,15 +54,12 @@ export default function ChatRoom() {
     handleJoinRoom();
   }, [roomId, user?.userId, router]);
 
-
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
-
-
 
   if (isLoading) {
     return (
@@ -92,29 +70,40 @@ export default function ChatRoom() {
   }
 
   return (
-    <RoomUsersProvider roomId={roomId}>
-      <main className="min-h-screen bg-gradient-to-b from-violet-50 to-violet-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="container mx-auto px-4 py-4 h-screen flex flex-col">
-          <ChatRoomHeader 
-            roomId={roomId} 
-            onBack={() => router.push('/')} 
-          />
+    <main className="min-h-screen bg-gradient-to-b from-violet-50 to-violet-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="container mx-auto px-4 py-4 h-screen flex flex-col">
+        <ChatRoomHeader 
+          roomId={roomId} 
+          onBack={() => router.push('/')} 
+        />
 
-          <div className="flex-1 flex gap-4">
-            {/* Main Chat Area */}
-            <Card className="flex-1 p-4 bg-white dark:bg-gray-800 flex flex-col">
-              <MessageList 
-                ref={scrollRef}
-                messages={messages}
-                currentUserId={CURRENT_USER_ID}
-              />
-              <MessageInput onSendMessage={handleSendMessage} />
-            </Card>
+        <div className="flex-1 flex gap-4">
+          {/* Main Chat Area */}
+          <Card className="flex-1 p-4 bg-white dark:bg-gray-800 flex flex-col">
+            <MessageList 
+              ref={scrollRef}
+              messages={messages}
+              currentUserId={user?.userId || ''}
+            />
+            <MessageInput roomId={roomId} />
+          </Card>
 
-            <ActiveUsersSidebar />
-          </div>
+          <ActiveUsersSidebar />
         </div>
-      </main>
+      </div>
+    </main>
+  );
+}
+
+export default function ChatRoom() {
+  const params = useParams();
+  const roomId = params.roomId as string;
+
+  return (
+    <RoomUsersProvider roomId={roomId}>
+      <RoomMessagesProvider roomId={roomId}>
+        <ChatRoomContent />
+      </RoomMessagesProvider>
     </RoomUsersProvider>
   );
 }

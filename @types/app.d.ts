@@ -7,12 +7,12 @@ declare module App{
     export interface  Room{
         roomId: string;
         userIds: string[];
-        messageIds: string[];
         users?: User[];
     }
     export interface  Message{
         messageId: string;
         userId: string;
+        roomId: string;
         body: string;
         timestamp: Date;
         isRead: boolean;
