@@ -20,7 +20,7 @@ export function MessageBubble({ message, isOwnMessage }: MessageBubbleProps) {
                 <div className="mb-1">{message.body}</div>
                 <div className="text-xs opacity-75">
                     {format(message.timestamp, 'p', { locale: ar })}
-                    {message.isRead && ' • تم القراءة'}
+                    {message.isRead && ' • مقروء'}
                 </div>
             </div>
         </div>

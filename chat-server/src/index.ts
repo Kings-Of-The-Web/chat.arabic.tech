@@ -42,7 +42,21 @@ interface LeaveRoomEvent {
     timestamp: Date;
 }
 
-type WebSocketEvent = CreateRoomEvent | JoinRoomEvent | SendMessageEvent | LeaveRoomEvent;
+interface ReadMessageEvent {
+    type: 'readMessage';
+    userId: string;
+    roomId: string;
+    messageId: string;
+    timestamp: Date;
+    isReadAt: Date;
+}
+
+type WebSocketEvent =
+    | CreateRoomEvent
+    | JoinRoomEvent
+    | SendMessageEvent
+    | LeaveRoomEvent
+    | ReadMessageEvent;
 
 const app = express();
 const server = createServer(app);
@@ -133,6 +147,19 @@ wss.on('connection', (ws: WebSocketClient) => {
                     const { roomId } = parsedData;
                     if (roomId && rooms.has(roomId)) {
                         // Send message to each user in the room
+                        rooms.get(roomId)?.forEach((client) => {
+                            if (client.readyState === WebSocket.OPEN) {
+                                client.send(JSON.stringify(parsedData));
+                            }
+                        });
+                    }
+                    break;
+                }
+
+                case 'readMessage': {
+                    const { roomId } = parsedData;
+                    if (roomId && rooms.has(roomId)) {
+                        // Broadcast the read status to all users in the room
                         rooms.get(roomId)?.forEach((client) => {
                             if (client.readyState === WebSocket.OPEN) {
                                 client.send(JSON.stringify(parsedData));

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRoomMessages } from '@/contexts/RoomMessages';
 import { useWebSocket } from '@/contexts/WebSocket';
 
+import { readMessage } from '@/lib/service/readMessage';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageBubble } from './MessageBubble';
 import { NewMessageNotification } from './NewMessageNotification';
@@ -16,6 +17,7 @@ export function MessageList({ currentUserId }: MessageListProps) {
     /////////////////////////
     const [showNotification, setShowNotification] = useState(false);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
+    const observerRef = useRef<IntersectionObserver | null>(null);
 
     /////////////////////////
     // Contexts
@@ -26,6 +28,26 @@ export function MessageList({ currentUserId }: MessageListProps) {
     /////////////////////////
     // Handlers
     /////////////////////////
+    const handleMessageVisibility = useCallback(
+        async (entries: IntersectionObserverEntry[]) => {
+            for (const entry of entries) {
+                if (entry.isIntersecting) {
+                    const messageId = entry.target.getAttribute('data-message-id');
+                    const message = messages.find((m) => m.messageId === messageId);
+                    if (message && !message.isRead) {
+                        console.log('Unread message visible:', message);
+                        try {
+                            await readMessage(message.roomId, message.messageId);
+                        } catch (error) {
+                            console.error('Failed to mark message as read:', error);
+                        }
+                    }
+                }
+            }
+        },
+        [messages]
+    );
+
     const scrollToBottom = useCallback(() => {
         if (scrollAreaRef.current) {
             const scrollContainer = scrollAreaRef.current.querySelector(
@@ -42,6 +64,38 @@ export function MessageList({ currentUserId }: MessageListProps) {
     /////////////////////////
     // Effects
     /////////////////////////
+    /**
+     * Initialize intersection observer
+     */
+    useEffect(() => {
+        observerRef.current = new IntersectionObserver(handleMessageVisibility, {
+            root: scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') || null,
+            threshold: 0.5,
+        });
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [handleMessageVisibility]);
+
+    /**
+     * Observe new messages
+     */
+    useEffect(() => {
+        const messageElements = document.querySelectorAll('[data-message-id]');
+        messageElements.forEach((element) => {
+            observerRef.current?.observe(element);
+        });
+
+        return () => {
+            messageElements.forEach((element) => {
+                observerRef.current?.unobserve(element);
+            });
+        };
+    }, [messages]);
+
     /**
      * Show notification when a new message is received, and it's not from the current user
      */
@@ -69,11 +123,12 @@ export function MessageList({ currentUserId }: MessageListProps) {
             >
                 <div className="space-y-4">
                     {messages.map((message) => (
-                        <MessageBubble
-                            key={message.messageId}
-                            message={message}
-                            isOwnMessage={message.userId === currentUserId}
-                        />
+                        <div key={message.messageId} data-message-id={message.messageId}>
+                            <MessageBubble
+                                message={message}
+                                isOwnMessage={message.userId === currentUserId}
+                            />
+                        </div>
                     ))}
                 </div>
             </ScrollArea>

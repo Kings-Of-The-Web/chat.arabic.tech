@@ -46,14 +46,25 @@ interface LeaveRoomEvent extends BaseEvent {
     timestamp: Date;
 }
 
+interface ReadMessageEvent extends BaseEvent {
+    type: 'readMessage';
+    messageId: string;
+    timestamp: Date;
+}
+
 // Server response types
 interface ConnectionResponse {
     type: 'connection';
     message: string;
 }
 
-type WebSocketEvent = CreateRoomEvent | JoinRoomEvent | SendMessageEvent | LeaveRoomEvent;
-type ServerMessage = AppEvent | SendMessageEvent | ConnectionResponse;
+type WebSocketEvent =
+    | CreateRoomEvent
+    | JoinRoomEvent
+    | SendMessageEvent
+    | LeaveRoomEvent
+    | ReadMessageEvent;
+type ServerMessage = AppEvent | SendMessageEvent | ReadMessageEvent | ConnectionResponse;
 
 interface WebSocketContextType {
     sendMessage: (message: WebSocketEvent) => void;
@@ -171,6 +182,12 @@ export function WebSocketProvider({
                         // Handle new message in chat
                         setLastMessage(data);
                         setIsNewMessage(true);
+                        setIsOwnMessage(data.userId === userId);
+                        break;
+                    case 'readMessage':
+                        // Handle message read status update
+                        setLastMessage(data);
+                        setIsNewMessage(false);
                         setIsOwnMessage(data.userId === userId);
                         break;
                     case 'connection':

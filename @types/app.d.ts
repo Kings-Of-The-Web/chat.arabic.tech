@@ -16,6 +16,7 @@ declare module App {
         body: string;
         timestamp: Date;
         isRead: boolean;
+        isReadAt?: Date;
     }
     export interface Event {
         userId: string;

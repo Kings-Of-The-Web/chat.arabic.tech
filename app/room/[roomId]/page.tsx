@@ -74,7 +74,7 @@ function ChatRoomContent() {
                     <ResizablePanel defaultSize={75} minSize={50}>
                         <Card className="flex h-full flex-col overflow-hidden bg-white p-4 dark:bg-gray-800">
                             <MessageList currentUserId={user?.userId || ''} />
-                            <MessageInput roomId={roomId} userId={user?.userId || ''} />
+                            <MessageInput roomId={roomId} />
                         </Card>
                     </ResizablePanel>
 
