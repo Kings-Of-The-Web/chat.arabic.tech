@@ -1,5 +1,9 @@
+#ide
+.idea
+
 # dependencies
 /node_modules
+chat-server/node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
@@ -35,3 +39,4 @@ yarn-error.log*
 next-env.d.ts
 
 certificates
+DB
