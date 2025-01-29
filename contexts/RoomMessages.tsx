@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
+
 import { getMessagesByRoomId } from '@/lib/service/getMessagesByRoomId';
 
 interface RoomMessagesContextType {
@@ -51,4 +52,4 @@ export function RoomMessagesProvider({
       {children}
     </RoomMessagesContext.Provider>
   );
-} 
+}

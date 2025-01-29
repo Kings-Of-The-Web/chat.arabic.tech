@@ -1,6 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useWebSocket } from '@/contexts/WebSocket';
+
 import { getRoom } from '@/lib/service/getRoom';
 import { getUsersByIds } from '@/lib/service/getUsersByIds';
 
@@ -25,6 +27,13 @@ export function RoomUsersProvider({
 }) {
   const [users, setUsers] = useState<App.User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { lastMessage } = useWebSocket();
+
+  useEffect(() => {
+    if (lastMessage?.type === 'users_update') {
+      setUsers(lastMessage.users);
+    }
+  }, [lastMessage]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -34,7 +43,6 @@ export function RoomUsersProvider({
           setUsers(room.users);
         } else {
           const users = await getUsersByIds(room.userIds);
-          console.log(users)
           setUsers(users);
         }
       } catch (error) {
@@ -46,16 +54,9 @@ export function RoomUsersProvider({
     };
 
     fetchUsers();
-    const interval = setInterval(fetchUsers, 5000);
-
-    return () => {
-      clearInterval(interval);
-    };
   }, [roomId]);
 
   return (
-    <RoomUsersContext.Provider value={{ users, isLoading }}>
-      {children}
-    </RoomUsersContext.Provider>
+    <RoomUsersContext.Provider value={{ users, isLoading }}>{children}</RoomUsersContext.Provider>
   );
 }

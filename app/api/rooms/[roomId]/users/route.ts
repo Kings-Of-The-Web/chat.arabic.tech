@@ -1,15 +1,12 @@
-import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { NextResponse } from 'next/server';
 
-export async function GET(
-  request: Request,
-  { params }: { params: { roomId: string } }
-) {
+export async function GET(request: Request, { params }: { params: { roomId: string } }) {
   try {
     const roomId = params.roomId;
     const filePath = path.join(process.cwd(), 'DB', 'rooms', `${roomId}.json`);
-    
+
     // Check if file exists
     try {
       await fs.access(filePath);
@@ -27,4 +24,4 @@ export async function GET(
     console.error('Error reading room users:', error);
     return NextResponse.json({ users: [] });
   }
-} 
+}

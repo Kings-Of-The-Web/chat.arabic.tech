@@ -1,24 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { roomId: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { roomId: string } }) {
   try {
     const { roomId } = params;
     const roomsDir = path.join(process.cwd(), 'DB', 'rooms');
     const roomPath = path.join(roomsDir, `${roomId}.json`);
-    
+
     // Check if room exists
     try {
       await fs.access(roomPath);
     } catch {
-      return NextResponse.json(
-        { error: 'Room not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Room not found' }, { status: 404 });
     }
 
     // Read and parse the room file
@@ -38,7 +32,7 @@ export async function GET(
           return {
             userId,
             name: 'Anonymous',
-            isOnline: true
+            isOnline: true,
           };
         }
       })
@@ -47,9 +41,6 @@ export async function GET(
     return NextResponse.json({ ...room, users });
   } catch (error) {
     console.error('Error reading room:', error);
-    return NextResponse.json(
-      { error: 'Failed to get room details' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to get room details' }, { status: 500 });
   }
-} 
+}

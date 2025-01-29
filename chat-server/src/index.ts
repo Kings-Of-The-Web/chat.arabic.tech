@@ -1,6 +1,6 @@
-import express from 'express';
 import { createServer } from 'http';
-import { WebSocketServer, WebSocket } from 'ws';
+import express from 'express';
+import { WebSocket, WebSocketServer } from 'ws';
 
 const app = express();
 const server = createServer(app);
@@ -20,40 +20,44 @@ wss.on('connection', (ws: WebSocketClient) => {
   console.log('New client connected');
 
   // Send welcome message
-  ws.send(JSON.stringify({
-    type: 'connection',
-    message: 'Connected to WebSocket server'
-  }));
+  ws.send(
+    JSON.stringify({
+      type: 'connection',
+      message: 'Connected to WebSocket server',
+    })
+  );
 
   // Handle incoming messages
   ws.on('message', (data: string) => {
     try {
       const parsedData = JSON.parse(data.toString());
       console.log('Received:', parsedData);
-      
+
       if (parsedData.type === 'join') {
         const { roomId, userId } = parsedData;
-        
+
         // Store client information
         ws.roomId = roomId;
         ws.userId = userId;
-        
+
         // Create room if it doesn't exist
         if (!rooms.has(roomId)) {
           rooms.set(roomId, new Set());
         }
-        
+
         // Add client to room
         rooms.get(roomId)?.add(ws);
-        
+
         // Notify room about new user
         rooms.get(roomId)?.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({
-              type: 'userJoined',
-              userId,
-              roomId
-            }));
+            client.send(
+              JSON.stringify({
+                type: 'userJoined',
+                userId,
+                roomId,
+              })
+            );
           }
         });
       } else {
@@ -78,7 +82,7 @@ wss.on('connection', (ws: WebSocketClient) => {
     if (ws.roomId && rooms.has(ws.roomId)) {
       const room = rooms.get(ws.roomId);
       room?.delete(ws);
-      
+
       // Remove room if empty
       if (room?.size === 0) {
         rooms.delete(ws.roomId);
@@ -86,11 +90,13 @@ wss.on('connection', (ws: WebSocketClient) => {
         // Notify remaining clients about user leaving
         room?.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({
-              type: 'userLeft',
-              userId: ws.userId,
-              roomId: ws.roomId
-            }));
+            client.send(
+              JSON.stringify({
+                type: 'userLeft',
+                userId: ws.userId,
+                roomId: ws.roomId,
+              })
+            );
           }
         });
       }
@@ -113,4 +119,4 @@ app.get('/health', (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`WebSocket server is running on port ${PORT}`);
-}); 
+});

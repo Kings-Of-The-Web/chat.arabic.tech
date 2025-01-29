@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { db } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
@@ -15,22 +16,19 @@ export async function GET(request: NextRequest) {
     const users = await db.user.findMany({
       where: {
         userId: {
-          in: userIds
-        }
+          in: userIds,
+        },
       },
       select: {
         userId: true,
         name: true,
-        isOnline: true
-      }
+        isOnline: true,
+      },
     });
 
     return NextResponse.json(users);
   } catch (error) {
     console.error('Error fetching users:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch users' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
   }
-} 
+}

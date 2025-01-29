@@ -1,18 +1,20 @@
-"use client";
+'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
-import { ChatRoomHeader } from '@/components/ChatRoom/ChatRoomHeader';
-import { MessageList } from '@/components/ChatRoom/MessageList';
-import { MessageInput } from '@/components/ChatRoom/MessageInput';
-import { ActiveUsersSidebar } from '@/components/ChatRoom/ActiveUsersSidebar';
-import { useUser } from '@/contexts/UserContext';
-import { joinRoom } from '@/lib/service/joinRoom';
+import { RoomMessagesProvider, useRoomMessages } from '@/contexts/RoomMessages';
 import { RoomUsersProvider } from '@/contexts/RoomUsers';
-import { RoomMessagesProvider, useRoomMessages } from "@/contexts/RoomMessages";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { useUser } from '@/contexts/UserContext';
+import { WebSocketProvider } from '@/contexts/WebSocket';
+import { toast } from 'sonner';
+
+import { joinRoom } from '@/lib/service/joinRoom';
+import { ActiveUsersSidebar } from '@/components/ChatRoom/ActiveUsersSidebar';
+import { ChatRoomHeader } from '@/components/ChatRoom/ChatRoomHeader';
+import { MessageInput } from '@/components/ChatRoom/MessageInput';
+import { MessageList } from '@/components/ChatRoom/MessageList';
+import { Card } from '@/components/ui/card';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 
 const CURRENT_USER_ID = 'current';
 const SYSTEM_USER_ID = 'system';
@@ -44,7 +46,7 @@ function ChatRoomContent() {
   useEffect(() => {
     const handleJoinRoom = async () => {
       if (!user?.userId) return;
-      
+
       try {
         await joinRoom(roomId, user.userId);
       } catch (error) {
@@ -64,7 +66,7 @@ function ChatRoomContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-violet-50 to-violet-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 to-violet-100 dark:from-gray-900 dark:to-gray-800">
         <div className="text-violet-600 dark:text-violet-400">جارٍ التحميل...</div>
       </div>
     );
@@ -72,32 +74,26 @@ function ChatRoomContent() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-violet-50 to-violet-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-4 h-screen flex flex-col">
-        <ChatRoomHeader 
-          roomId={roomId} 
-          onBack={() => router.push('/')} 
-        />
+      <div className="container mx-auto flex h-screen flex-col px-4 py-4">
+        <ChatRoomHeader roomId={roomId} onBack={() => router.push('/')} />
 
-        <ResizablePanelGroup 
-          direction="horizontal" 
-          className="flex-1 rounded-lg"
-        >
+        <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg">
           {/* Main Chat Area */}
           <ResizablePanel defaultSize={75} minSize={50}>
-            <Card className="h-full p-4 bg-white dark:bg-gray-800 flex flex-col">
-              <MessageList 
-                ref={scrollRef}
-                currentUserId={user?.userId || ''}
-              />
+            <Card className="flex h-full flex-col bg-white p-4 dark:bg-gray-800">
+              <MessageList ref={scrollRef} currentUserId={user?.userId || ''} />
               <MessageInput roomId={roomId} />
             </Card>
           </ResizablePanel>
 
-          <ResizableHandle withHandle className="bg-violet-200 dark:bg-gray-700 transition-colors" />
-          
-          <ResizablePanel 
-            defaultSize={25} 
-            minSize={15} 
+          <ResizableHandle
+            withHandle
+            className="bg-violet-200 transition-colors dark:bg-gray-700"
+          />
+
+          <ResizablePanel
+            defaultSize={25}
+            minSize={15}
             maxSize={40}
             className="transition-transform duration-300 ease-in-out"
           >
@@ -114,10 +110,12 @@ export default function ChatRoom() {
   const roomId = params.roomId as string;
 
   return (
-    <RoomUsersProvider roomId={roomId}>
-      <RoomMessagesProvider roomId={roomId}>
-        <ChatRoomContent />
-      </RoomMessagesProvider>
-    </RoomUsersProvider>
+    <WebSocketProvider roomId={roomId}>
+      <RoomUsersProvider roomId={roomId}>
+        <RoomMessagesProvider roomId={roomId}>
+          <ChatRoomContent />
+        </RoomMessagesProvider>
+      </RoomUsersProvider>
+    </WebSocketProvider>
   );
 }

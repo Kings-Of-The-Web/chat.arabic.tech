@@ -1,7 +1,8 @@
-import { ArrowLeft, Copy, Check } from 'lucide-react';
-import { Card } from "@/components/ui/card";
 import { useState } from 'react';
-import { toast } from "sonner";
+import { ArrowLeft, Check, Copy } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { Card } from '@/components/ui/card';
 
 interface ChatRoomHeaderProps {
   roomId: string;
@@ -19,7 +20,7 @@ export function ChatRoomHeader({ roomId, onBack }: ChatRoomHeaderProps) {
   };
 
   return (
-    <Card className="p-4 mb-4 flex items-center justify-between bg-white dark:bg-gray-800">
+    <Card className="mb-4 flex items-center justify-between bg-white p-4 dark:bg-gray-800">
       <button
         onClick={onBack}
         className="btn inline-flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
@@ -28,7 +29,7 @@ export function ChatRoomHeader({ roomId, onBack }: ChatRoomHeaderProps) {
       </button>
       <div className="flex items-center gap-4">
         <div className="text-right">
-          <h1 className="text-xl font-hacen font-bold text-gray-900 dark:text-white">
+          <h1 className="font-hacen text-xl font-bold text-gray-900 dark:text-white">
             غرفة المحادثة
           </h1>
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
@@ -44,4 +45,4 @@ export function ChatRoomHeader({ roomId, onBack }: ChatRoomHeaderProps) {
       </div>
     </Card>
   );
-} 
+}

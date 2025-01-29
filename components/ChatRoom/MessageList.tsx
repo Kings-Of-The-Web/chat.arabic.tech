@@ -1,7 +1,8 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageBubble } from "./MessageBubble";
-import { forwardRef } from "react";
-import { useRoomMessages } from "@/contexts/RoomMessages";
+import { forwardRef } from 'react';
+import { useRoomMessages } from '@/contexts/RoomMessages';
+
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { MessageBubble } from './MessageBubble';
 
 interface MessageListProps {
   currentUserId: string;
@@ -10,7 +11,7 @@ interface MessageListProps {
 export const MessageList = forwardRef<HTMLDivElement, MessageListProps>(
   ({ currentUserId }, ref) => {
     const { messages } = useRoomMessages();
-    
+
     return (
       <ScrollArea className="flex-1 pr-4" ref={ref}>
         <div className="space-y-4">
@@ -27,4 +28,4 @@ export const MessageList = forwardRef<HTMLDivElement, MessageListProps>(
   }
 );
 
-MessageList.displayName = 'MessageList'; 
+MessageList.displayName = 'MessageList';

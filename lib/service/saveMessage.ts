@@ -1,4 +1,8 @@
-export async function saveMessage(userId: string, roomId: string, messageBody: string) : Promise<App.Message> {
+export async function saveMessage(
+  userId: string,
+  roomId: string,
+  messageBody: string
+): Promise<App.Message> {
   const response = await fetch(`/api/rooms/${roomId}/messages`, {
     method: 'POST',
     headers: {
