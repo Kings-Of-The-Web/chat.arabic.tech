@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
+import { useWebSocket } from '@/contexts/WebSocket';
 import { Send } from 'lucide-react';
 
 import { saveMessage } from '@/lib/service/saveMessage';
@@ -7,39 +8,65 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 interface MessageInputProps {
-  roomId: string;
+    roomId: string;
 }
 
 export function MessageInput({ roomId }: MessageInputProps) {
-  const [newMessage, setNewMessage] = useState('');
-  const { user } = useUser();
+    ////////////////////////
+    // State Variables
+    ////////////////////////
+    const [newMessage, setNewMessage] = useState('');
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!newMessage.trim() || !user) return;
+    ////////////////////////
+    // Context Variables
+    ////////////////////////
+    const { user } = useUser();
+    const { sendMessage } = useWebSocket();
 
-      // Call the saveMessage service
-      await saveMessage(user.userId, roomId, newMessage);
+    ////////////////////////
+    // Handlers
+    ////////////////////////
+    const handleSubmit = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            if (!newMessage.trim() || !user) return;
 
-      setNewMessage('');
-    },
-    [newMessage, user, roomId]
-  );
+            try {
+                // Save message to server
+                const savedMessage = await saveMessage(user.userId, roomId, newMessage);
 
-  return (
-    <form onSubmit={handleSubmit} className="mt-4 flex flex-row-reverse gap-2">
-      <Input
-        type="text"
-        value={newMessage}
-        onChange={(e) => setNewMessage(e.target.value)}
-        placeholder="اكتب رسالتك هنا..."
-        className="flex-1 text-right font-hacen"
-        dir="rtl"
-      />
-      <Button type="submit" className="bg-violet-600 text-white hover:bg-violet-700">
-        <Send className="h-4 w-4" />
-      </Button>
-    </form>
-  );
+                // Send through WebSocket
+                sendMessage({
+                    type: 'sendMessage',
+                    messageId: savedMessage.messageId,
+                    userId: savedMessage.userId,
+                    roomId: savedMessage.roomId,
+                    body: savedMessage.body,
+                    timestamp: savedMessage.timestamp,
+                    isRead: savedMessage.isRead,
+                });
+
+                setNewMessage('');
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+        },
+        [newMessage, user, roomId, sendMessage]
+    );
+
+    return (
+        <form onSubmit={handleSubmit} className="mt-4 flex flex-row-reverse gap-2">
+            <Input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="اكتب رسالتك هنا..."
+                className="flex-1 text-right font-hacen"
+                dir="rtl"
+            />
+            <Button type="submit" className="bg-violet-600 text-white hover:bg-violet-700">
+                <Send className="h-4 w-4" />
+            </Button>
+        </form>
+    );
 }

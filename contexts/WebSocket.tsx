@@ -12,216 +12,218 @@ let reconnectTimeout: NodeJS.Timeout | null = null;
 
 // App Event Types (matching server)
 interface AppEvent {
-  userId: string;
-  roomId: string;
-  type: 'joined' | 'left';
-  timestamp: Date;
+    userId: string;
+    roomId: string;
+    type: 'joined' | 'left';
+    timestamp: Date;
 }
 
 // WebSocket Event Types (matching server)
 interface BaseEvent {
-  type: string;
-  userId: string;
-  roomId: string;
+    type: string;
+    userId: string;
+    roomId: string;
 }
 
 interface CreateRoomEvent extends BaseEvent {
-  type: 'createRoom';
+    type: 'createRoom';
 }
 
 interface JoinRoomEvent extends BaseEvent {
-  type: 'joinRoom';
+    type: 'joinRoom';
 }
 
 interface SendMessageEvent extends BaseEvent {
-  type: 'sendMessage';
-  messageId: string;
-  body: string;
-  timestamp: Date;
-  isRead: boolean;
+    type: 'sendMessage';
+    messageId: string;
+    body: string;
+    timestamp: Date;
+    isRead: boolean;
 }
 
 interface LeaveRoomEvent extends BaseEvent {
-  type: 'leaveRoom';
-  timestamp: Date;
+    type: 'leaveRoom';
+    timestamp: Date;
 }
 
 // Server response types
 interface ConnectionResponse {
-  type: 'connection';
-  message: string;
+    type: 'connection';
+    message: string;
 }
 
 type WebSocketEvent = CreateRoomEvent | JoinRoomEvent | SendMessageEvent | LeaveRoomEvent;
 type ServerMessage = AppEvent | SendMessageEvent | ConnectionResponse;
 
 interface WebSocketContextType {
-  sendMessage: (message: WebSocketEvent) => void;
-  isConnected: boolean;
-  lastMessage: ServerMessage | null;
-  connect: (roomId: string, userId: string) => WebSocket;
-  disconnect: () => void;
+    sendMessage: (message: WebSocketEvent) => void;
+    isConnected: boolean;
+    lastMessage: ServerMessage | null;
+    connect: (roomId: string, userId: string) => WebSocket;
+    disconnect: () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType>({
-  sendMessage: () => {},
-  isConnected: false,
-  lastMessage: null,
-  connect: () => {
-    throw new Error('Not implemented');
-  },
-  disconnect: () => {},
+    sendMessage: () => {},
+    isConnected: false,
+    lastMessage: null,
+    connect: () => {
+        throw new Error('Not implemented');
+    },
+    disconnect: () => {},
 });
 
 export const useWebSocket = () => useContext(WebSocketContext);
 
 export function WebSocketProvider({
-  children,
-  roomId,
-  userId,
+    children,
+    roomId,
+    userId,
 }: {
-  children: React.ReactNode;
-  roomId: string;
-  userId: string;
+    children: React.ReactNode;
+    roomId: string;
+    userId: string;
 }) {
-  ////////////////////////
-  // State Variables
-  ////////////////////////
-  const [isConnected, setIsConnected] = useState(false);
-  const [lastMessage, setLastMessage] = useState<ServerMessage | null>(null);
+    ////////////////////////
+    // State Variables
+    ////////////////////////
+    const [isConnected, setIsConnected] = useState(false);
+    const [lastMessage, setLastMessage] = useState<ServerMessage | null>(null);
 
-  ////////////////////////
-  // Handlers
-  ////////////////////////
-  /**
-   * Send a message over the WebSocket connection
-   */
-  const sendMessage = useCallback((message: WebSocketEvent) => {
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-      console.warn('WebSocket is not connected, message not sent');
-      return;
-    }
-    ws.send(JSON.stringify(message));
-  }, []);
-
-  /**
-   * Connect to the WebSocket server
-   */
-  const connect = useCallback((roomId: string, userId: string) => {
-    if (ws) {
-      ws.close();
-    }
-
-    // Clear any existing reconnect timeout
-    if (reconnectTimeout) {
-      clearTimeout(reconnectTimeout);
-      reconnectTimeout = null;
-    }
-
-    ws = new WebSocket(WS_URL);
-
-    ws.onopen = function (this: WebSocket) {
-      setIsConnected(true);
-      console.log('Connected to WebSocket server');
-      
-      // Send join room event
-      this.send(
-        JSON.stringify({
-          type: 'joinRoom',
-          roomId,
-          userId,
-        } satisfies JoinRoomEvent)
-      );
-    };
-
-    ws.onclose = function (this: WebSocket) {
-      setIsConnected(false);
-      console.log('Disconnected from WebSocket server, attempting to reconnect...');
-
-      // Attempt to reconnect
-      reconnectTimeout = setTimeout(() => {
-        if (!ws || ws.readyState === WebSocket.CLOSED) {
-          connect(roomId, userId);
+    ////////////////////////
+    // Handlers
+    ////////////////////////
+    /**
+     * Send a message over the WebSocket connection
+     */
+    const sendMessage = useCallback((message: WebSocketEvent) => {
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            console.warn('WebSocket is not connected, message not sent');
+            return;
         }
-      }, RECONNECT_INTERVAL);
-    };
+        ws.send(JSON.stringify(message));
+    }, []);
 
-    ws.onmessage = function (this: WebSocket, event: MessageEvent) {
-      try {
-        const data = JSON.parse(event.data) as ServerMessage;
-        console.log('Received message:', data);
-        
-        switch (data.type) {
-          case 'joined':
-          case 'left':
-            // Handle room events (user joined/left)
-            setLastMessage(data);
-            break;
-          case 'sendMessage':
-            // Handle new message in chat
-            setLastMessage(data);
-            break;
-          case 'connection':
-            // Handle connection confirmation
-            console.log('Connection confirmed:', data.message);
-            setLastMessage(data);
-            break;
-          default:
-            console.warn('Unknown message type:', data);
+    /**
+     * Connect to the WebSocket server
+     */
+    const connect = useCallback((roomId: string, userId: string) => {
+        if (ws) {
+            ws.close();
         }
-      } catch (error) {
-        console.error('Error parsing message:', error);
-      }
+
+        // Clear any existing reconnect timeout
+        if (reconnectTimeout) {
+            clearTimeout(reconnectTimeout);
+            reconnectTimeout = null;
+        }
+
+        ws = new WebSocket(WS_URL);
+
+        ws.onopen = function (this: WebSocket) {
+            setIsConnected(true);
+            console.log('Connected to WebSocket server');
+
+            // Send join room event
+            this.send(
+                JSON.stringify({
+                    type: 'joinRoom',
+                    roomId,
+                    userId,
+                } satisfies JoinRoomEvent)
+            );
+        };
+
+        ws.onclose = function (this: WebSocket) {
+            setIsConnected(false);
+            console.log('Disconnected from WebSocket server, attempting to reconnect...');
+
+            // Attempt to reconnect
+            reconnectTimeout = setTimeout(() => {
+                if (!ws || ws.readyState === WebSocket.CLOSED) {
+                    connect(roomId, userId);
+                }
+            }, RECONNECT_INTERVAL);
+        };
+
+        ws.onmessage = function (this: WebSocket, event: MessageEvent) {
+            try {
+                const data = JSON.parse(event.data) as ServerMessage;
+                console.log('Received message:', data);
+
+                switch (data.type) {
+                    case 'joined':
+                    case 'left':
+                        // Handle room events (user joined/left)
+                        setLastMessage(data);
+                        break;
+                    case 'sendMessage':
+                        // Handle new message in chat
+                        setLastMessage(data);
+                        break;
+                    case 'connection':
+                        // Handle connection confirmation
+                        console.log('Connection confirmed:', data.message);
+                        setLastMessage(data);
+                        break;
+                    default:
+                        console.warn('Unknown message type:', data);
+                }
+            } catch (error) {
+                console.error('Error parsing message:', error);
+            }
+        };
+
+        ws.onerror = function (this: WebSocket, error: Event) {
+            console.error('WebSocket error:', error);
+            setIsConnected(false);
+        };
+
+        return ws;
+    }, []);
+
+    /**
+     * Disconnect from the WebSocket server
+     */
+    const disconnect = useCallback(() => {
+        if (reconnectTimeout) {
+            clearTimeout(reconnectTimeout);
+            reconnectTimeout = null;
+        }
+        if (ws) {
+            ws.close();
+            ws = null;
+        }
+        setIsConnected(false);
+    }, []);
+
+    ////////////////////////
+    // Effects
+    ////////////////////////
+    /**
+     * Connect WebSocket on mount
+     *
+     * And, automatically disconnect WebSocket on unmount
+     */
+    useEffect(() => {
+        connect(roomId, userId);
+
+        return () => {
+            disconnect();
+        };
+    }, [roomId, userId, connect, disconnect]);
+
+    const webSocketContextValue = {
+        sendMessage,
+        isConnected,
+        lastMessage,
+        connect,
+        disconnect,
     };
 
-    ws.onerror = function (this: WebSocket, error: Event) {
-      console.error('WebSocket error:', error);
-      setIsConnected(false);
-    };
-
-    return ws;
-  }, []);
-
-  /**
-   * Disconnect from the WebSocket server
-   */
-  const disconnect = useCallback(() => {
-    if (reconnectTimeout) {
-      clearTimeout(reconnectTimeout);
-      reconnectTimeout = null;
-    }
-    if (ws) {
-      ws.close();
-      ws = null;
-    }
-    setIsConnected(false);
-  }, []);
-
-  ////////////////////////
-  // Effects
-  ////////////////////////
-  /**
-   * Connect WebSocket on mount
-   *
-   * And, automatically disconnect WebSocket on unmount
-   */
-  useEffect(() => {
-    connect(roomId, userId);
-
-    return () => {
-      disconnect();
-    };
-  }, [roomId, userId, connect, disconnect]);
-
-  const webSocketContextValue = {
-    sendMessage,
-    isConnected,
-    lastMessage,
-    connect,
-    disconnect,
-  };
-
-  return (
-    <WebSocketContext.Provider value={webSocketContextValue}>{children}</WebSocketContext.Provider>
-  );
+    return (
+        <WebSocketContext.Provider value={webSocketContextValue}>
+            {children}
+        </WebSocketContext.Provider>
+    );
 }
