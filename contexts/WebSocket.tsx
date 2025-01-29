@@ -59,18 +59,24 @@ interface WebSocketContextType {
     sendMessage: (message: WebSocketEvent) => void;
     isConnected: boolean;
     lastMessage: ServerMessage | null;
+    isNewMessage: boolean;
+    isOwnMessage: boolean;
     connect: (roomId: string, userId: string) => WebSocket;
     disconnect: () => void;
+    resetNewMessageState: () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType>({
     sendMessage: () => {},
     isConnected: false,
     lastMessage: null,
+    isNewMessage: false,
+    isOwnMessage: false,
     connect: () => {
         throw new Error('Not implemented');
     },
     disconnect: () => {},
+    resetNewMessageState: () => {},
 });
 
 export const useWebSocket = () => useContext(WebSocketContext);
@@ -89,6 +95,8 @@ export function WebSocketProvider({
     ////////////////////////
     const [isConnected, setIsConnected] = useState(false);
     const [lastMessage, setLastMessage] = useState<ServerMessage | null>(null);
+    const [isNewMessage, setIsNewMessage] = useState(false);
+    const [isOwnMessage, setIsOwnMessage] = useState(false);
 
     ////////////////////////
     // Handlers
@@ -156,15 +164,21 @@ export function WebSocketProvider({
                     case 'left':
                         // Handle room events (user joined/left)
                         setLastMessage(data);
+                        setIsNewMessage(false);
+                        setIsOwnMessage(false);
                         break;
                     case 'sendMessage':
                         // Handle new message in chat
                         setLastMessage(data);
+                        setIsNewMessage(true);
+                        setIsOwnMessage(data.userId === userId);
                         break;
                     case 'connection':
                         // Handle connection confirmation
                         console.log('Connection confirmed:', data.message);
                         setLastMessage(data);
+                        setIsNewMessage(false);
+                        setIsOwnMessage(false);
                         break;
                     default:
                         console.warn('Unknown message type:', data);
@@ -197,6 +211,13 @@ export function WebSocketProvider({
         setIsConnected(false);
     }, []);
 
+    /**
+     * Reset new message state
+     */
+    const resetNewMessageState = useCallback(() => {
+        setIsNewMessage(false);
+    }, []);
+
     ////////////////////////
     // Effects
     ////////////////////////
@@ -217,8 +238,11 @@ export function WebSocketProvider({
         sendMessage,
         isConnected,
         lastMessage,
+        isNewMessage,
+        isOwnMessage,
         connect,
         disconnect,
+        resetNewMessageState,
     };
 
     return (

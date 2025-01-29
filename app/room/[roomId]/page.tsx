@@ -36,7 +36,6 @@ function ChatRoomContent() {
     ////////////////////////
     // Refs
     ////////////////////////
-    const scrollRef = useRef<HTMLDivElement>(null);
     const roomId = params.roomId as string;
 
     /////////////////////////
@@ -57,13 +56,6 @@ function ChatRoomContent() {
         handleJoinRoom();
     }, [roomId, user?.userId, router]);
 
-    // Auto-scroll to bottom when new messages arrive
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-    }, [messages]);
-
     if (isLoading) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-violet-50 to-violet-100 dark:from-gray-900 dark:to-gray-800">
@@ -80,9 +72,9 @@ function ChatRoomContent() {
                 <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg">
                     {/* Main Chat Area */}
                     <ResizablePanel defaultSize={75} minSize={50}>
-                        <Card className="flex h-full flex-col bg-white p-4 dark:bg-gray-800">
-                            <MessageList ref={scrollRef} currentUserId={user?.userId || ''} />
-                            <MessageInput roomId={roomId} />
+                        <Card className="flex h-full flex-col overflow-hidden bg-white p-4 dark:bg-gray-800">
+                            <MessageList currentUserId={user?.userId || ''} />
+                            <MessageInput roomId={roomId} userId={user?.userId || ''} />
                         </Card>
                     </ResizablePanel>
 

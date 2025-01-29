@@ -1,65 +1,71 @@
-import { useCallback, useState } from 'react';
-import { useUser } from '@/contexts/UserContext';
+import { FormEvent, KeyboardEvent, useCallback, useState } from 'react';
 import { useWebSocket } from '@/contexts/WebSocket';
 import { Send } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
-import { saveMessage } from '@/lib/service/saveMessage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 interface MessageInputProps {
     roomId: string;
+    userId: string;
 }
 
-export function MessageInput({ roomId }: MessageInputProps) {
-    ////////////////////////
-    // State Variables
-    ////////////////////////
-    const [newMessage, setNewMessage] = useState('');
+export function MessageInput({ roomId, userId }: MessageInputProps) {
+    /////////////////////////
+    // State
+    /////////////////////////
+    const [message, setMessage] = useState('');
 
-    ////////////////////////
-    // Context Variables
-    ////////////////////////
-    const { user } = useUser();
+    /////////////////////////
+    // Contexts
+    /////////////////////////
     const { sendMessage } = useWebSocket();
 
-    ////////////////////////
+    /////////////////////////
     // Handlers
-    ////////////////////////
-    const handleSubmit = useCallback(
-        async (e: React.FormEvent) => {
-            e.preventDefault();
-            if (!newMessage.trim() || !user) return;
+    /////////////////////////
+    const handleSendMessage = useCallback(() => {
+        if (!message.trim()) return;
 
-            try {
-                // Save message to server
-                const savedMessage = await saveMessage(user.userId, roomId, newMessage);
+        sendMessage({
+            type: 'sendMessage',
+            messageId: uuidv4(),
+            roomId,
+            userId,
+            body: message.trim(),
+            timestamp: new Date(),
+            isRead: false,
+        });
 
-                // Send through WebSocket
-                sendMessage({
-                    type: 'sendMessage',
-                    messageId: savedMessage.messageId,
-                    userId: savedMessage.userId,
-                    roomId: savedMessage.roomId,
-                    body: savedMessage.body,
-                    timestamp: savedMessage.timestamp,
-                    isRead: savedMessage.isRead,
-                });
+        setMessage('');
+    }, [message, roomId, userId, sendMessage]);
 
-                setNewMessage('');
-            } catch (error) {
-                console.error('Error sending message:', error);
+    const handleKeyPress = useCallback(
+        (e: KeyboardEvent<HTMLInputElement>) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSendMessage();
             }
         },
-        [newMessage, user, roomId, sendMessage]
+        [handleSendMessage]
+    );
+
+    const handleSubmit = useCallback(
+        (e: FormEvent<HTMLFormElement>) => {
+            e.preventDefault();
+            handleSendMessage();
+        },
+        [handleSendMessage]
     );
 
     return (
         <form onSubmit={handleSubmit} className="mt-4 flex flex-row-reverse gap-2">
             <Input
                 type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={handleKeyPress}
                 placeholder="اكتب رسالتك هنا..."
                 className="flex-1 text-right font-hacen"
                 dir="rtl"
