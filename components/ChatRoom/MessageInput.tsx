@@ -1,17 +1,18 @@
 import { FormEvent, KeyboardEvent, useCallback, useState } from 'react';
+import { useUser } from '@/contexts/UserContext';
 import { useWebSocket } from '@/contexts/WebSocket';
 import { Send } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
+import { saveMessage } from '@/lib/service/saveMessage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 interface MessageInputProps {
     roomId: string;
-    userId: string;
 }
 
-export function MessageInput({ roomId, userId }: MessageInputProps) {
+export function MessageInput({ roomId }: MessageInputProps) {
     /////////////////////////
     // State
     /////////////////////////
@@ -20,41 +21,48 @@ export function MessageInput({ roomId, userId }: MessageInputProps) {
     /////////////////////////
     // Contexts
     /////////////////////////
-    const { sendMessage } = useWebSocket();
+    const { user } = useUser();
+    const { sendMessage, resetNewMessageState } = useWebSocket();
 
     /////////////////////////
     // Handlers
     /////////////////////////
-    const handleSendMessage = useCallback(() => {
+    const handleSendMessage = useCallback(async () => {
         if (!message.trim()) return;
+        if (!user?.userId) return;
 
+        // Save message in the DB
+        const savedMessage = await saveMessage(user.userId, roomId, message);
+
+        // Send through WebSocket to the chat server
         sendMessage({
             type: 'sendMessage',
-            messageId: uuidv4(),
-            roomId,
-            userId,
-            body: message.trim(),
-            timestamp: new Date(),
-            isRead: false,
+            messageId: savedMessage.messageId,
+            userId: savedMessage.userId,
+            roomId: savedMessage.roomId,
+            body: savedMessage.body,
+            timestamp: savedMessage.timestamp,
+            isRead: savedMessage.isRead,
         });
 
+        resetNewMessageState();
         setMessage('');
-    }, [message, roomId, userId, sendMessage]);
+    }, [message, roomId, user?.userId, sendMessage]);
 
     const handleKeyPress = useCallback(
-        (e: KeyboardEvent<HTMLInputElement>) => {
+        async (e: KeyboardEvent<HTMLInputElement>) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                handleSendMessage();
+                await handleSendMessage();
             }
         },
         [handleSendMessage]
     );
 
     const handleSubmit = useCallback(
-        (e: FormEvent<HTMLFormElement>) => {
+        async (e: FormEvent<HTMLFormElement>) => {
             e.preventDefault();
-            handleSendMessage();
+            await handleSendMessage();
         },
         [handleSendMessage]
     );
