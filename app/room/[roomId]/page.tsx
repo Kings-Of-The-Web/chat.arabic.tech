@@ -108,9 +108,14 @@ function ChatRoomContent() {
 export default function ChatRoom() {
   const params = useParams();
   const roomId = params.roomId as string;
+  const { user } = useUser();
+
+  if (!user?.userId) {
+    return null; // or some loading state/redirect
+  }
 
   return (
-    <WebSocketProvider roomId={roomId}>
+    <WebSocketProvider roomId={roomId} userId={user.userId}>
       <RoomUsersProvider roomId={roomId}>
         <RoomMessagesProvider roomId={roomId}>
           <ChatRoomContent />
