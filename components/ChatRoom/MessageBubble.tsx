@@ -1,5 +1,11 @@
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface MessageBubbleProps {
     message: App.Message;
@@ -18,9 +24,24 @@ export function MessageBubble({ message, isOwnMessage }: MessageBubbleProps) {
             >
                 <div className="mb-1 text-sm font-bold">{message.userId}</div>
                 <div className="mb-1">{message.body}</div>
-                <div className="text-xs opacity-75">
+                <div className="text-xs opacity-90 cursor-pointer">
                     {format(message.timestamp, 'p', { locale: ar })}
-                    {message.isRead && ' • مقروء'}
+                    {!isOwnMessage && message.isRead && message.isReadAt && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button className="mr-1 opacity-100 hover:underline">
+                                        • مقروء
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="font-hacen">
+                                        تم القراءة في {format(message.isReadAt, 'p', { locale: ar })}
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                 </div>
             </div>
         </div>

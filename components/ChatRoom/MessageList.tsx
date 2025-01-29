@@ -34,7 +34,7 @@ export function MessageList({ currentUserId }: MessageListProps) {
                 if (entry.isIntersecting) {
                     const messageId = entry.target.getAttribute('data-message-id');
                     const message = messages.find((m) => m.messageId === messageId);
-                    if (message && !message.isRead) {
+                    if (message && !message.isRead && message.userId !== currentUserId) {
                         console.log('Unread message visible:', message);
                         try {
                             await readMessage(message.roomId, message.messageId);
@@ -45,7 +45,7 @@ export function MessageList({ currentUserId }: MessageListProps) {
                 }
             }
         },
-        [messages]
+        [messages, currentUserId]
     );
 
     const scrollToBottom = useCallback(() => {
