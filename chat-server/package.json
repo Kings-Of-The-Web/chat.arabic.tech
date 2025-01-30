@@ -3,9 +3,9 @@
     "version": "1.0.0",
     "main": "dist/index.js",
     "scripts": {
-        "build": "tsc",
-        "start": "node dist/index.js",
-        "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
+        "chat-server:build": "tsc",
+        "chat-server:start": "node dist/index.js",
+        "chat-server:dev": "ts-node-dev --respawn --transpile-only src/index.ts --port 3019"
     },
     "dependencies": {
         "ws": "^8.16.0",
