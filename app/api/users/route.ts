@@ -4,17 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
     try {
-
         // Add error handling for JSON parsing
         let body;
         try {
             body = await request.json();
         } catch (parseError) {
             console.error('Failed to parse request body:', parseError);
-            return NextResponse.json(
-                { error: 'Invalid JSON in request body' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
         }
 
         const { userId, name } = body as App.User;
@@ -36,7 +32,23 @@ export async function POST(request: NextRequest) {
 
         await fs.writeFile(userPath, JSON.stringify(user, null, 2));
 
-        return NextResponse.json(user);
+        // Create response with user data
+        const response = NextResponse.json(user);
+
+        // Set cookie with user information
+        // Cookie will expire in 30 days
+        const thirtyDaysInSeconds = 30 * 24 * 60 * 60;
+        response.cookies.set({
+            name: 'ArabicTech_User',
+            value: JSON.stringify(user),
+            maxAge: thirtyDaysInSeconds,
+            path: '/',
+            sameSite: 'lax',
+            secure: true,
+            httpOnly: true,
+        });
+
+        return response;
     } catch (error) {
         console.error('Error creating user:', error);
         return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
@@ -49,10 +61,7 @@ export async function PATCH(request: NextRequest) {
         const { userId, name } = body as App.User;
 
         if (!userId || !name) {
-            return NextResponse.json(
-                { error: 'userId and name are required' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: 'userId and name are required' }, { status: 400 });
         }
 
         const usersDir = path.join(process.cwd(), 'DB', 'users');
@@ -75,7 +84,23 @@ export async function PATCH(request: NextRequest) {
         // Save updated user data
         await fs.writeFile(userPath, JSON.stringify(user, null, 2));
 
-        return NextResponse.json(user);
+        // Create response with updated user data
+        const response = NextResponse.json(user);
+
+        // Update cookie with user information
+        // Cookie will expire in 30 days
+        const thirtyDaysInSeconds = 30 * 24 * 60 * 60;
+        response.cookies.set({
+            name: 'ArabicTech_User',
+            value: JSON.stringify(user),
+            maxAge: thirtyDaysInSeconds,
+            path: '/',
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+        });
+
+        return response;
     } catch (error) {
         console.error('Error updating user:', error);
         return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });

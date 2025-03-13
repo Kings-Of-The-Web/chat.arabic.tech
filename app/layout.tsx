@@ -4,6 +4,9 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { UserContextProvider } from '@/contexts/UserContext';
 
+import { isLoggedInServer } from '@/lib/service';
+import { isLoggedIn } from '@/lib/service/isLoggedIn';
+
 const cabinet = localFont({
     src: [
         {
@@ -62,12 +65,15 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+    // Get initial user state
+    const initialUser = isLoggedInServer();
+
     return (
         <html lang="en">
             <body
                 className={`${cabinet.variable} ${aspekta.variable} ${arslan.variable} ${hacen.variable}`}
             >
-                <UserContextProvider>{children}</UserContextProvider>
+                <UserContextProvider initialUser={initialUser}>{children}</UserContextProvider>
             </body>
         </html>
     );

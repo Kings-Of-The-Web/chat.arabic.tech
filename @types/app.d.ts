@@ -2,7 +2,7 @@ declare module App {
     export interface User {
         userId: string;
         name: string;
-        isOnline: boolean;
+        isOnline?: boolean;
     }
     export interface Room {
         roomId: string;
