@@ -2,30 +2,69 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { Authentication } from '@/lib/helpers/Authentication';
+import { Cookies } from '@/lib/helpers/Cookies';
+import { isLoggedIn } from '@/lib/service/isLoggedIn';
 
 interface UserContextType {
     user: App.User | null;
-    setUser: (user: App.User) => void;
+    setUser: (user: App.User | null) => void;
+    updateUserName: (name: string) => void;
+    logout: () => void;
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
+//////////////////////////
+// Initial State
+//////////////////////////
+const initialState = {
+    user: null,
+    setUser: () => {},
+    updateUserName: () => {},
+    logout: () => {},
+};
 
-export function UserContextProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<App.User | null>(null);
+const UserContext = createContext<UserContextType>(initialState);
 
-    useEffect(() => {
-        const initializeUser = async () => {
-            if (!user) {
-                const fingerprint = await Authentication.generateFingerprint();
-                setUser({ userId: fingerprint });
-            }
-        };
+export function UserContextProvider({
+    children,
+    initialUser,
+}: {
+    children: React.ReactNode;
+    initialUser?: App.User | null;
+}) {
+    //////////////////////////
+    // State Variables
+    //////////////////////////
+    const [user, setUserState] = useState<App.User | null>(initialUser ?? null);
 
-        initializeUser();
-    }, [user]);
+    ///////////////////////
+    // Handlers
+    /////////////////////
+    const setUser = (newUser: App.User | null) => {
+        if (newUser) {
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 30);
+            Cookies.set('ArabicTech_User', JSON.stringify(newUser), { expires: expiryDate });
+        }
+        setUserState(newUser);
+    };
 
-    return <UserContext.Provider value={{ user, setUser }}>{children}</UserContext.Provider>;
+    const updateUserName = (name: string) => {
+        if (user) {
+            const updatedUser = { ...user, name };
+            setUser(updatedUser);
+        }
+    };
+
+    const logout = () => {
+        Cookies.remove('ArabicTech_User');
+        setUserState(null);
+    };
+
+    return (
+        <UserContext.Provider value={{ user, setUser, updateUserName, logout }}>
+            {children}
+        </UserContext.Provider>
+    );
 }
 
 export function useUser() {

@@ -44,17 +44,17 @@ function ChatRoomContent() {
     // Join room when component mounts
     useEffect(() => {
         const handleJoinRoom = async () => {
-            if (!user?.userId) return;
+            if (!user?.username) return;
 
             try {
-                await joinRoom(roomId, user.userId);
+                await joinRoom(roomId, user.username);
             } catch (error) {
                 toast.error('فشل في الانضمام إلى الغرفة');
                 router.push('/');
             }
         };
         handleJoinRoom();
-    }, [roomId, user?.userId, router]);
+    }, [roomId, user?.username, router]);
 
     if (isLoading) {
         return (
@@ -73,7 +73,7 @@ function ChatRoomContent() {
                     {/* Main Chat Area */}
                     <ResizablePanel defaultSize={75} minSize={50}>
                         <Card className="flex h-full flex-col overflow-hidden bg-white p-4 dark:bg-gray-800">
-                            <MessageList currentUserId={user?.userId || ''} />
+                            <MessageList currentUserId={user?.username || ''} />
                             <MessageInput roomId={roomId} />
                         </Card>
                     </ResizablePanel>
@@ -102,12 +102,12 @@ export default function ChatRoom() {
     const roomId = params.roomId as string;
     const { user } = useUser();
 
-    if (!user?.userId) {
+    if (!user?.username) {
         return null; // or some loading state/redirect
     }
 
     return (
-        <WebSocketProvider roomId={roomId} userId={user.userId}>
+        <WebSocketProvider roomId={roomId} username={user.username}>
             <RoomUsersProvider roomId={roomId}>
                 <RoomMessagesProvider roomId={roomId}>
                     <ChatRoomContent />

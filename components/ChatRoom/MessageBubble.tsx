@@ -18,7 +18,7 @@ export function MessageBubble({ message, isOwnMessage }: MessageBubbleProps) {
                         : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white'
                 }`}
             >
-                <div className="mb-1 text-sm font-bold">{message.userId}</div>
+                <div className="mb-1 text-sm font-bold">{message.username}</div>
                 <div className="mb-1">{message.body}</div>
                 <div className="cursor-pointer text-xs opacity-90">
                     {format(message.timestamp, 'p', { locale: ar })}

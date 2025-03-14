@@ -42,7 +42,7 @@ export function RoomUsersProvider({
                 if (room.users) {
                     setUsers(room.users);
                 } else {
-                    const users = await getUsersByIds(room.userIds);
+                    const users = await getUsersByIds(room.usernames);
                     setUsers(users);
                 }
             } catch (error) {

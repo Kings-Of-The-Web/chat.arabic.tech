@@ -1,5 +1,5 @@
 export async function saveMessage(
-    userId: string,
+    username: string,
     roomId: string,
     messageBody: string
 ): Promise<App.Message> {
@@ -9,7 +9,7 @@ export async function saveMessage(
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            userId,
+            username,
             messageBody,
         }),
     });

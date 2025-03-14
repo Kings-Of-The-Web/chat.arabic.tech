@@ -1,10 +1,10 @@
-export async function leaveRoom(roomId: string, userId: string): Promise<void> {
+export async function leaveRoom(roomId: string, username: string): Promise<void> {
     const response = await fetch(`/api/rooms/${roomId}/leave`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ username }),
     });
 
     if (!response.ok) {

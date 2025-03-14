@@ -34,7 +34,7 @@ export function MessageList({ currentUserId }: MessageListProps) {
                 if (entry.isIntersecting) {
                     const messageId = entry.target.getAttribute('data-message-id');
                     const message = messages.find((m) => m.messageId === messageId);
-                    if (message && !message.isRead && message.userId !== currentUserId) {
+                    if (message && !message.isRead && message.username !== currentUserId) {
                         console.log('Unread message visible:', message);
                         try {
                             await readMessage(message.roomId, message.messageId);
@@ -126,7 +126,7 @@ export function MessageList({ currentUserId }: MessageListProps) {
                         <div key={message.messageId} data-message-id={message.messageId}>
                             <MessageBubble
                                 message={message}
-                                isOwnMessage={message.userId === currentUserId}
+                                isOwnMessage={message.username === currentUserId}
                             />
                         </div>
                     ))}

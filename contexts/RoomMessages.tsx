@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { getMessagesByRoomId } from '@/lib/service/getMessagesByRoomId';
 import { useWebSocket } from './WebSocket';
+import {useUser} from "@/contexts/UserContext";
 
 interface RoomMessagesContextType {
     messages: App.Message[];
@@ -27,11 +28,12 @@ export function RoomMessagesProvider({
     const [messages, setMessages] = useState<App.Message[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { lastMessage } = useWebSocket();
+    const {user} = useUser();
 
     useEffect(() => {
         const fetchMessages = async () => {
             try {
-                const fetchedMessages = await getMessagesByRoomId(roomId);
+                const fetchedMessages = await getMessagesByRoomId(roomId, user?.username || '');
                 setMessages(fetchedMessages);
             } catch (error) {
                 console.error('Error fetching room messages:', error);
@@ -42,7 +44,7 @@ export function RoomMessagesProvider({
         };
 
         fetchMessages().then((r) => r);
-    }, [roomId]);
+    }, [roomId, user?.username]);
 
     // Listen for new messages from WebSocket
     useEffect(() => {
@@ -52,7 +54,7 @@ export function RoomMessagesProvider({
                 body: lastMessage.body,
                 timestamp: new Date(lastMessage.timestamp),
                 isRead: lastMessage.isRead,
-                userId: lastMessage.userId,
+                username: lastMessage.username,
                 roomId: lastMessage.roomId,
             };
 
