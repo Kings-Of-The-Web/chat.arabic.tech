@@ -28,10 +28,21 @@ export async function POST(request: NextRequest, { params }: { params: { roomId:
                 details: { roomId }
             }, { status: 404 });
         }
+        
+        // Check if user is already in the room
+        if (roomExists.usernames.includes(username)) {
+            // User is already in the room, return success with room details
+            return NextResponse.json({ 
+                success: true, 
+                room: roomExists,
+                message: 'User is already in this room'
+            });
+        }
 
         // Add user to room
         const success = await RoomRepository.addUserToRoom(roomId, username);
         if (!success) {
+            console.error(`Failed to add user ${username} to room ${roomId}`);
             return NextResponse.json({ 
                 error: 'Failed to join room',
                 details: { roomId, username }
@@ -39,12 +50,20 @@ export async function POST(request: NextRequest, { params }: { params: { roomId:
         }
 
         // Get updated room details
-        const room = await RoomRepository.getRoomById(roomId);
-        if (!room) {
-            return NextResponse.json({ error: 'Room not found after joining' }, { status: 404 });
-        }
+        try {
+            const room = await RoomRepository.getRoomById(roomId);
+            if (!room) {
+                return NextResponse.json({ error: 'Room not found after joining' }, { status: 404 });
+            }
 
-        return NextResponse.json({ success: true, room });
+            return NextResponse.json({ success: true, room });
+        } catch (roomError) {
+            console.error('Error getting room details after joining:', roomError);
+            return NextResponse.json({ 
+                error: 'Joined room but failed to get updated details',
+                details: roomError instanceof Error ? roomError.message : String(roomError)
+            }, { status: 500 });
+        }
     } catch (error) {
         console.error('Failed to join room:', error);
         return NextResponse.json({ 

@@ -85,19 +85,41 @@ class RoomRepository {
      */
     async addUserToRoom(roomId: string, username: string): Promise<boolean> {
         try {
-            await db.transaction(async (connection) => {
-                await connection.execute(
-                    'INSERT INTO room_users (room_id, username) VALUES (?, ?)',
-                    [roomId, username]
-                );
+            // First check if user is already in the room
+            const existingUser = await db.query<any[]>(
+                'SELECT * FROM room_users WHERE room_id = ? AND username = ?',
+                [roomId, username]
+            );
+            
+            // If user is already in the room, return true (success)
+            if (existingUser.length > 0) {
+                console.log(`User ${username} is already in room ${roomId}`);
+                return true;
+            }
+            
+            // Try to insert the user into the room
+            try {
+                await db.transaction(async (connection) => {
+                    await connection.execute(
+                        'INSERT INTO room_users (room_id, username) VALUES (?, ?)',
+                        [roomId, username]
+                    );
 
-                await connection.execute(
-                    'INSERT INTO events (username, room_id, type) VALUES (?, ?, ?)',
-                    [username, roomId, 'joined']
-                );
-            });
-
-            return true;
+                    await connection.execute(
+                        'INSERT INTO events (username, room_id, type) VALUES (?, ?, ?)',
+                        [username, roomId, 'joined']
+                    );
+                });
+                return true;
+            } catch (insertError: any) {
+                // If the error is a duplicate entry, the user is already in the room
+                if (insertError.code === 'ER_DUP_ENTRY') {
+                    console.log(`User ${username} is already in room ${roomId} (caught duplicate)`);
+                    return true;
+                }
+                // Otherwise, rethrow the error
+                throw insertError;
+            }
         } catch (error) {
             console.error('Error adding user to room:', error);
             return false;
