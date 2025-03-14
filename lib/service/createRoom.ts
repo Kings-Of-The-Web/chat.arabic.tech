@@ -8,6 +8,5 @@ export async function createRoom(username: string): Promise<string> {
     }
 
     const data = await response.json();
-    console.log('Room created:', data);
     return data.roomId;
 }

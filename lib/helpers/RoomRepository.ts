@@ -1,0 +1,143 @@
+import { v4 as uuidv4 } from 'uuid';
+
+import db from './Database';
+import UserRepository from './UserRepository';
+
+class RoomRepository {
+    /**
+     * Create a new room
+     */
+    async createRoom(usernames: string[]): Promise<App.Room> {
+        const roomId = uuidv4();
+
+        return await db.transaction(async (connection) => {
+            // Create the room
+            await connection.execute('INSERT INTO rooms (room_id) VALUES (?)', [roomId]);
+
+            // Add users to the room
+            for (const username of usernames) {
+                await connection.execute(
+                    'INSERT INTO room_users (room_id, username) VALUES (?, ?)',
+                    [roomId, username]
+                );
+
+                // Add joined event
+                await connection.execute(
+                    'INSERT INTO events (username, room_id, type) VALUES (?, ?, ?)',
+                    [username, roomId, 'joined']
+                );
+            }
+
+            return {
+                roomId,
+                usernames,
+            };
+        });
+    }
+
+    /**
+     * Get a room by ID
+     */
+    async getRoomById(roomId: string): Promise<App.Room | null> {
+        const rooms = await db.query<{ room_id: string }[]>(
+            'SELECT room_id FROM rooms WHERE room_id = ?',
+            [roomId]
+        );
+
+        if (rooms.length === 0) return null;
+
+        const users = await db.query<{ username: string }[]>(
+            'SELECT username FROM room_users WHERE room_id = ?',
+            [roomId]
+        );
+
+        const usernames = users.map((u) => u.username);
+        const userDetails = await UserRepository.getUsersByUsernames(usernames);
+
+        return {
+            roomId,
+            usernames,
+            users: userDetails,
+        };
+    }
+
+    /**
+     * Get rooms for a user
+     */
+    async getRoomsForUser(username: string): Promise<App.Room[]> {
+        const roomIds = await db.query<{ room_id: string }[]>(
+            'SELECT room_id FROM room_users WHERE username = ?',
+            [username]
+        );
+
+        const rooms: App.Room[] = [];
+
+        for (const { room_id } of roomIds) {
+            const room = await this.getRoomById(room_id);
+            if (room) rooms.push(room);
+        }
+
+        return rooms;
+    }
+
+    /**
+     * Add a user to a room
+     */
+    async addUserToRoom(roomId: string, username: string): Promise<boolean> {
+        try {
+            await db.transaction(async (connection) => {
+                await connection.execute(
+                    'INSERT INTO room_users (room_id, username) VALUES (?, ?)',
+                    [roomId, username]
+                );
+
+                await connection.execute(
+                    'INSERT INTO events (username, room_id, type) VALUES (?, ?, ?)',
+                    [username, roomId, 'joined']
+                );
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error adding user to room:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Remove a user from a room
+     */
+    async removeUserFromRoom(roomId: string, username: string): Promise<boolean> {
+        try {
+            await db.transaction(async (connection) => {
+                await connection.execute(
+                    'DELETE FROM room_users WHERE room_id = ? AND username = ?',
+                    [roomId, username]
+                );
+
+                await connection.execute(
+                    'INSERT INTO events (username, room_id, type) VALUES (?, ?, ?)',
+                    [username, roomId, 'left']
+                );
+
+                // Check if room is empty and delete if it is
+                const users = await connection.execute(
+                    'SELECT COUNT(*) as count FROM room_users WHERE room_id = ?',
+                    [roomId]
+                );
+
+                const count = (users[0] as any)[0].count;
+                if (count === 0) {
+                    await connection.execute('DELETE FROM rooms WHERE room_id = ?', [roomId]);
+                }
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error removing user from room:', error);
+            return false;
+        }
+    }
+}
+
+export default new RoomRepository();
