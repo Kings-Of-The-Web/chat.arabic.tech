@@ -21,7 +21,7 @@ export function isLoggedIn(): App.User | null {
             const user = JSON.parse(userCookieValue) as App.User;
 
             // Validate that the user object has the required properties
-            if (!user || !user.userId) {
+            if (!user || !user.username) {
                 return null;
             }
 

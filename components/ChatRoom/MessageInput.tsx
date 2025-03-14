@@ -29,16 +29,16 @@ export function MessageInput({ roomId }: MessageInputProps) {
     /////////////////////////
     const handleSendMessage = useCallback(async () => {
         if (!message.trim()) return;
-        if (!user?.userId) return;
+        if (!user?.username) return;
 
         // Save message in the DB
-        const savedMessage = await saveMessage(user.userId, roomId, message);
+        const savedMessage = await saveMessage(user.username, roomId, message);
 
         // Send through WebSocket to the chat server
         sendMessage({
             type: 'sendMessage',
             messageId: savedMessage.messageId,
-            userId: savedMessage.userId,
+            username: savedMessage.username,
             roomId: savedMessage.roomId,
             body: savedMessage.body,
             timestamp: savedMessage.timestamp,
@@ -47,7 +47,7 @@ export function MessageInput({ roomId }: MessageInputProps) {
 
         resetNewMessageState();
         setMessage('');
-    }, [message, roomId, user?.userId, sendMessage]);
+    }, [message, roomId, user?.username, sendMessage]);
 
     const handleKeyPress = useCallback(
         async (e: KeyboardEvent<HTMLInputElement>) => {

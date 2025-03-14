@@ -12,7 +12,7 @@ let reconnectTimeout: NodeJS.Timeout | null = null;
 
 // App Event Types (matching server)
 interface AppEvent {
-    userId: string;
+    username: string;
     roomId: string;
     type: 'joined' | 'left';
     timestamp: Date;
@@ -21,7 +21,7 @@ interface AppEvent {
 // WebSocket Event Types (matching server)
 interface BaseEvent {
     type: string;
-    userId: string;
+    username: string;
     roomId: string;
 }
 
@@ -72,7 +72,7 @@ interface WebSocketContextType {
     lastMessage: ServerMessage | null;
     isNewMessage: boolean;
     isOwnMessage: boolean;
-    connect: (roomId: string, userId: string) => WebSocket;
+    connect: (roomId: string, username: string) => WebSocket;
     disconnect: () => void;
     resetNewMessageState: () => void;
 }
@@ -95,11 +95,11 @@ export const useWebSocket = () => useContext(WebSocketContext);
 export function WebSocketProvider({
     children,
     roomId,
-    userId,
+    username,
 }: {
     children: React.ReactNode;
     roomId: string;
-    userId: string;
+    username: string;
 }) {
     ////////////////////////
     // State Variables
@@ -126,7 +126,7 @@ export function WebSocketProvider({
     /**
      * Connect to the WebSocket server
      */
-    const connect = useCallback((roomId: string, userId: string) => {
+    const connect = useCallback((roomId: string, username: string) => {
         if (ws) {
             ws.close();
         }
@@ -148,7 +148,7 @@ export function WebSocketProvider({
                 JSON.stringify({
                     type: 'joinRoom',
                     roomId,
-                    userId,
+                    username,
                 } satisfies JoinRoomEvent)
             );
         };
@@ -160,7 +160,7 @@ export function WebSocketProvider({
             // Attempt to reconnect
             reconnectTimeout = setTimeout(() => {
                 if (!ws || ws.readyState === WebSocket.CLOSED) {
-                    connect(roomId, userId);
+                    connect(roomId, username);
                 }
             }, RECONNECT_INTERVAL);
         };
@@ -182,13 +182,13 @@ export function WebSocketProvider({
                         // Handle new message in chat
                         setLastMessage(data);
                         setIsNewMessage(true);
-                        setIsOwnMessage(data.userId === userId);
+                        setIsOwnMessage(data.username === username);
                         break;
                     case 'readMessage':
                         // Handle message read status update
                         setLastMessage(data);
                         setIsNewMessage(false);
-                        setIsOwnMessage(data.userId === userId);
+                        setIsOwnMessage(data.username === username);
                         break;
                     case 'connection':
                         // Handle connection confirmation
@@ -244,12 +244,12 @@ export function WebSocketProvider({
      * And, automatically disconnect WebSocket on unmount
      */
     useEffect(() => {
-        connect(roomId, userId);
+        connect(roomId, username);
 
         return () => {
             disconnect();
         };
-    }, [roomId, userId, connect, disconnect]);
+    }, [roomId, username, connect, disconnect]);
 
     const webSocketContextValue = {
         sendMessage,

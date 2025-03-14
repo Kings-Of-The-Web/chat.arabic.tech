@@ -22,15 +22,15 @@ export async function GET(request: NextRequest, { params }: { params: { roomId: 
         // Get user details from DB/users
         const usersDir = path.join(process.cwd(), 'DB', 'users');
         const users = await Promise.all(
-            room.userIds.map(async (userId: string) => {
+            room.usernames.map(async (username: string) => {
                 try {
-                    const userPath = path.join(usersDir, `${userId}.json`);
+                    const userPath = path.join(usersDir, `${username}.json`);
                     const userData = await fs.readFile(userPath, 'utf8');
                     return JSON.parse(userData);
                 } catch {
                     // If user file doesn't exist, return basic user info
                     return {
-                        userId,
+                        username,
                         name: 'Anonymous',
                         isOnline: true,
                     };

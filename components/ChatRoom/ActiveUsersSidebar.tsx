@@ -40,7 +40,7 @@ export function ActiveUsersSidebar() {
                     <div className="space-y-2 pl-1">
                         {users.map((user) => (
                             <div
-                                key={user.userId}
+                                key={user.username}
                                 className="flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
                             >
                                 <span className="font-hacen text-gray-900 dark:text-white">

@@ -46,9 +46,9 @@ export async function POST(request: NextRequest, { params }: { params: { roomId:
     try {
         const { roomId } = params;
         const body = await request.json();
-        const { userId, messageBody } = body;
+        const { username, messageBody } = body;
 
-        if (!userId || !messageBody) {
+        if (!username || !messageBody) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest, { params }: { params: { roomId:
 
         const newMessage: App.Message = {
             messageId: uuidv4(),
-            userId,
+            username,
             roomId,
             body: messageBody,
             timestamp: new Date(),

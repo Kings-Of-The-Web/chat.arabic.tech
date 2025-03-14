@@ -52,7 +52,7 @@ export function RoomMessagesProvider({
                 body: lastMessage.body,
                 timestamp: new Date(lastMessage.timestamp),
                 isRead: lastMessage.isRead,
-                userId: lastMessage.userId,
+                username: lastMessage.username,
                 roomId: lastMessage.roomId,
             };
 

@@ -6,23 +6,23 @@ import { v4 as uuidv4 } from 'uuid';
 export async function POST(request: NextRequest, { params }: { params: { roomId: string } }) {
     try {
         const { roomId } = params;
-        const { userId } = await request.json();
+        const { username } = await request.json();
 
-        if (!userId) {
-            return NextResponse.json({ error: 'userId is required' }, { status: 400 });
+        if (!username) {
+            return NextResponse.json({ error: 'username is required' }, { status: 400 });
         }
 
         // Check if user exists and create if not
         const usersDir = path.join(process.cwd(), 'DB', 'users');
         await fs.mkdir(usersDir, { recursive: true });
-        const userPath = path.join(usersDir, `${userId}.json`);
+        const userPath = path.join(usersDir, `${username}.json`);
 
         try {
             await fs.access(userPath);
         } catch {
             // User doesn't exist, create them
             const user: App.User = {
-                userId,
+                username,
                 name: 'Anonymous',
                 isOnline: true,
             };
@@ -39,8 +39,8 @@ export async function POST(request: NextRequest, { params }: { params: { roomId:
             const room = JSON.parse(roomData) as App.Room;
 
             // Add user to the room if not already present
-            if (!room.userIds.includes(userId)) {
-                room.userIds.push(userId);
+            if (!room.usernames.includes(username)) {
+                room.usernames.push(username);
                 await fs.writeFile(roomPath, JSON.stringify(room, null, 2));
 
                 // Create and save the join event
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest, { params }: { params: { roomId:
                 await fs.mkdir(eventsDir, { recursive: true });
 
                 const event: App.Event = {
-                    userId,
+                    username,
                     roomId,
                     type: 'joined',
                     timestamp: new Date(),

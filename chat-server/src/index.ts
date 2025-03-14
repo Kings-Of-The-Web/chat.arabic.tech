@@ -5,7 +5,7 @@ import { WebSocket, WebSocketServer } from 'ws';
 // App types
 declare namespace App {
     interface Event {
-        userId: string;
+        username: string;
         roomId: string;
         type: 'joined' | 'left';
         timestamp: Date;
@@ -15,20 +15,20 @@ declare namespace App {
 // WebSocket Event Types
 interface CreateRoomEvent {
     type: 'createRoom';
-    userId: string;
+    username: string;
     roomId: string;
 }
 
 interface JoinRoomEvent {
     type: 'joinRoom';
-    userId: string;
+    username: string;
     roomId: string;
 }
 
 interface SendMessageEvent {
     type: 'sendMessage';
     messageId: string;
-    userId: string;
+    username: string;
     roomId: string;
     body: string;
     timestamp: Date;
@@ -37,14 +37,14 @@ interface SendMessageEvent {
 
 interface LeaveRoomEvent {
     type: 'leaveRoom';
-    userId: string;
+    username: string;
     roomId: string;
     timestamp: Date;
 }
 
 interface ReadMessageEvent {
     type: 'readMessage';
-    userId: string;
+    username: string;
     roomId: string;
     messageId: string;
     timestamp: Date;
@@ -67,7 +67,7 @@ const PORT = process.env.PORT || 3019;
 // Store connected clients by room
 interface WebSocketClient extends WebSocket {
     roomId?: string;
-    userId?: string;
+    username?: string;
 }
 
 // Store connected clients by room in a Map
@@ -93,12 +93,12 @@ wss.on('connection', (ws: WebSocketClient) => {
 
             switch (parsedData.type) {
                 case 'createRoom': {
-                    const { roomId, userId } = parsedData;
+                    const { roomId, username } = parsedData;
                     if (!rooms.has(roomId)) {
                         rooms.set(roomId, new Set());
                     }
                     ws.roomId = roomId;
-                    ws.userId = userId;
+                    ws.username = username;
                     rooms.get(roomId)?.add(ws);
 
                     // Notify about room creation and user joining
@@ -107,7 +107,7 @@ wss.on('connection', (ws: WebSocketClient) => {
                             client.send(
                                 JSON.stringify({
                                     type: 'joined',
-                                    userId,
+                                    username,
                                     roomId,
                                     timestamp: new Date(),
                                 } satisfies App.Event)
@@ -118,9 +118,9 @@ wss.on('connection', (ws: WebSocketClient) => {
                 }
 
                 case 'joinRoom': {
-                    const { roomId, userId } = parsedData;
+                    const { roomId, username } = parsedData;
                     ws.roomId = roomId;
-                    ws.userId = userId;
+                    ws.username = username;
 
                     if (!rooms.has(roomId)) {
                         rooms.set(roomId, new Set());
@@ -133,7 +133,7 @@ wss.on('connection', (ws: WebSocketClient) => {
                             client.send(
                                 JSON.stringify({
                                     type: 'joined',
-                                    userId,
+                                    username,
                                     roomId,
                                     timestamp: new Date(),
                                 } satisfies App.Event)
@@ -170,7 +170,7 @@ wss.on('connection', (ws: WebSocketClient) => {
                 }
 
                 case 'leaveRoom': {
-                    const { roomId, userId } = parsedData;
+                    const { roomId, username } = parsedData;
                     if (roomId && rooms.has(roomId)) {
                         const room = rooms.get(roomId);
                         room?.delete(ws); // Remove only the requesting user from the room
@@ -185,7 +185,7 @@ wss.on('connection', (ws: WebSocketClient) => {
                                     client.send(
                                         JSON.stringify({
                                             type: 'left',
-                                            userId,
+                                            username,
                                             roomId,
                                             timestamp: new Date(),
                                         } satisfies App.Event)
@@ -205,7 +205,7 @@ wss.on('connection', (ws: WebSocketClient) => {
     // Handle client disconnection
     ws.on('close', () => {
         console.log('Client disconnected');
-        if (ws.roomId && ws.userId && rooms.has(ws.roomId)) {
+        if (ws.roomId && ws.username && rooms.has(ws.roomId)) {
             const room = rooms.get(ws.roomId);
             room?.delete(ws); // Remove the client/user from the room
 
@@ -219,7 +219,7 @@ wss.on('connection', (ws: WebSocketClient) => {
                         client.send(
                             JSON.stringify({
                                 type: 'left',
-                                userId: ws.userId!,
+                                username: ws.username!,
                                 roomId: ws.roomId!,
                                 timestamp: new Date(),
                             } satisfies App.Event)
@@ -233,7 +233,7 @@ wss.on('connection', (ws: WebSocketClient) => {
     // Handle errors
     ws.on('error', (error) => {
         console.error('WebSocket error:', error);
-        if (ws.roomId && ws.userId && rooms.has(ws.roomId)) {
+        if (ws.roomId && ws.username && rooms.has(ws.roomId)) {
             const room = rooms.get(ws.roomId);
             room?.delete(ws);
 
@@ -247,7 +247,7 @@ wss.on('connection', (ws: WebSocketClient) => {
                         client.send(
                             JSON.stringify({
                                 type: 'left',
-                                userId: ws.userId!,
+                                username: ws.username!,
                                 roomId: ws.roomId!,
                                 timestamp: new Date(),
                             } satisfies App.Event)

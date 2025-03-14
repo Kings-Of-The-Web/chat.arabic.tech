@@ -23,7 +23,7 @@ export async function POST(request: NextApiRequest) {
             // Room doesn't exist, create it
             const room = {
                 roomId,
-                userIds: [],
+                usernames: [],
                 messageIds: [],
             };
 

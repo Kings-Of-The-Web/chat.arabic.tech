@@ -1,8 +1,8 @@
-export async function getUsersByIds(userIds: string[]): Promise<App.User[]> {
+export async function getUsersByIds(usernames: string[]): Promise<App.User[]> {
     try {
-        // Send all userIds as a query parameter
+        // Send all usernames as a query parameter
         const queryParams = new URLSearchParams();
-        userIds.forEach((id) => queryParams.append('ids', id));
+        usernames.forEach((id) => queryParams.append('ids', id));
 
         const response = await fetch(`/api/users?${queryParams.toString()}`);
 

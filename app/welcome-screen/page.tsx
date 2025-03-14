@@ -65,7 +65,7 @@ export default function WelcomeScreen() {
                             </h2>
                             <p className="text-gray-600 dark:text-gray-300">
                                 المعرف الخاص بك:{' '}
-                                <span className="font-semibold">{user.userId}</span>
+                                <span className="font-semibold">{user.username}</span>
                             </p>
                         </div>
                         <Button

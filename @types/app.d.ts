@@ -1,17 +1,17 @@
 declare module App {
     export interface User {
-        userId: string;
+        username: string;
         name: string;
         isOnline?: boolean;
     }
     export interface Room {
         roomId: string;
-        userIds: string[];
+        usernames: string[];
         users?: User[];
     }
     export interface Message {
         messageId: string;
-        userId: string;
+        username: string;
         roomId: string;
         body: string;
         timestamp: Date;
@@ -19,7 +19,7 @@ declare module App {
         isReadAt?: Date;
     }
     export interface Event {
-        userId: string;
+        username: string;
         roomId: string;
         type: 'joined' | 'left';
         timestamp: Date;

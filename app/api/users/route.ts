@@ -13,19 +13,19 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
         }
 
-        const { userId, name } = body as App.User;
+        const { username, name } = body as App.User;
 
-        if (!userId) {
-            return NextResponse.json({ error: 'userId is required' }, { status: 400 });
+        if (!username) {
+            return NextResponse.json({ error: 'username is required' }, { status: 400 });
         }
 
         // Create users directory if it doesn't exist
         const usersDir = path.join(process.cwd(), 'DB', 'users');
         await fs.mkdir(usersDir, { recursive: true });
 
-        const userPath = path.join(usersDir, `${userId}.json`);
+        const userPath = path.join(usersDir, `${username}.json`);
         const user: App.User = {
-            userId,
+            username,
             name: name || 'Anonymous',
             isOnline: true,
         };
@@ -58,14 +58,14 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
     try {
         const body = await request.json();
-        const { userId, name } = body as App.User;
+        const { username, name } = body as App.User;
 
-        if (!userId || !name) {
-            return NextResponse.json({ error: 'userId and name are required' }, { status: 400 });
+        if (!username || !name) {
+            return NextResponse.json({ error: 'username and name are required' }, { status: 400 });
         }
 
         const usersDir = path.join(process.cwd(), 'DB', 'users');
-        const userPath = path.join(usersDir, `${userId}.json`);
+        const userPath = path.join(usersDir, `${username}.json`);
 
         // Check if user exists
         try {
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
                 } catch {
                     // Return basic user info if file doesn't exist
                     return {
-                        userId: id,
+                        username: id,
                         name: 'Anonymous',
                         isOnline: true,
                     } as App.User;

@@ -15,7 +15,7 @@ export function WelcomeUser() {
     /////////////////////
     const { user, setUser, updateUserName } = useUser();
     const [name, setName] = useState('');
-    const [userId, setUserId] = useState('');
+    const [username, setUserId] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
@@ -38,7 +38,7 @@ export function WelcomeUser() {
     }, [user, router]);
 
     const handleCreateUser = async () => {
-        if (!userId.trim() || !name.trim()) {
+        if (!username.trim() || !name.trim()) {
             toast.error('الرجاء إدخال المعرف والاسم');
             return;
         }
@@ -46,7 +46,7 @@ export function WelcomeUser() {
         setIsLoading(true);
         try {
             const newUser = await createUser({
-                userId: userId.trim(),
+                username: username.trim(),
                 name: name.trim(),
                 isOnline: true,
             });
@@ -88,7 +88,7 @@ export function WelcomeUser() {
                 <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
                     <Input
                         type="text"
-                        value={userId}
+                        value={username}
                         onChange={(e) => setUserId(e.target.value)}
                         placeholder="أدخل معرف المستخدم"
                         className="flex-grow text-right"
