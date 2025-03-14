@@ -1,4 +1,4 @@
-export async function createRoom(username: string): Promise<string> {
+export async function createRoom(): Promise<string> {
     const response = await fetch('/api/rooms', {
         method: 'POST',
     });

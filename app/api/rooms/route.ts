@@ -1,36 +1,26 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { NextApiRequest } from 'next';
-import { NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
+import { NextRequest, NextResponse } from 'next/server';
+import RoomRepository from '@/lib/helpers/RoomRepository';
 
-export async function POST(request: NextApiRequest) {
+export async function POST(request: NextRequest) {
     try {
-        // Generate a new UUID for the room
-        const roomId = uuidv4();
-
-        // Ensure the DB/rooms directory exists
-        const roomsDir = path.join(process.cwd(), 'DB', 'rooms');
-        await fs.mkdir(roomsDir, { recursive: true });
-
-        // Check if room already exists
-        const roomPath = path.join(roomsDir, `${roomId}.json`);
-        try {
-            await fs.access(roomPath);
-            // If we get here, the room exists, return a new request
-            return NextResponse.redirect(new URL('/api/rooms', request.url));
-        } catch (error) {
-            // Room doesn't exist, create it
-            const room = {
-                roomId,
-                usernames: [],
-                messageIds: [],
-            };
-
-            await fs.writeFile(roomPath, JSON.stringify(room, null, 2));
-            return NextResponse.json({ roomId });
-        }
+        // Create a new room with no initial users
+        const room = await RoomRepository.createRoom([]);
+        
+        return NextResponse.json({ roomId: room.roomId });
     } catch (error) {
+        console.error('Failed to create room:', error);
         return NextResponse.json({ error: 'Failed to create room' }, { status: 500 });
+    }
+}
+
+// Optional: Add GET method to list all rooms if needed
+export async function GET(request: NextRequest) {
+    try {
+        // You might want to add this method to RoomRepository
+        const rooms = await RoomRepository.getAllRooms();
+        return NextResponse.json(rooms);
+    } catch (error) {
+        console.error('Failed to get rooms:', error);
+        return NextResponse.json({ error: 'Failed to get rooms' }, { status: 500 });
     }
 }

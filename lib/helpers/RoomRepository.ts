@@ -138,6 +138,22 @@ class RoomRepository {
             return false;
         }
     }
+
+    /**
+     * Get all rooms
+     */
+    async getAllRooms(): Promise<App.Room[]> {
+        const rooms = await db.query<{ room_id: string }[]>(
+            'SELECT room_id FROM rooms'
+        );
+
+        const roomDetails = await Promise.all(
+            rooms.map(({ room_id }) => this.getRoomById(room_id))
+        );
+
+        // Filter out any null values (rooms that might have been deleted)
+        return roomDetails.filter((room): room is App.Room => room !== null);
+    }
 }
 
 export default new RoomRepository();
