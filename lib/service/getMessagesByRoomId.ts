@@ -1,5 +1,5 @@
-export async function getMessagesByRoomId(roomId: string): Promise<App.Message[]> {
-    const response = await fetch(`/api/rooms/${roomId}/messages`, {
+export async function getMessagesByRoomId(roomId: string, username:string): Promise<App.Message[]> {
+    const response = await fetch(`/api/rooms/${roomId}/messages?username=${username}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

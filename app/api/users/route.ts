@@ -1,6 +1,5 @@
-import { promises as fs } from 'fs';
-import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
+import UserRepository from '@/lib/helpers/UserRepository';
 
 export async function POST(request: NextRequest) {
     try {
@@ -19,18 +18,21 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'username is required' }, { status: 400 });
         }
 
-        // Create users directory if it doesn't exist
-        const usersDir = path.join(process.cwd(), 'DB', 'users');
-        await fs.mkdir(usersDir, { recursive: true });
-
-        const userPath = path.join(usersDir, `${username}.json`);
-        const user: App.User = {
-            username,
-            name: name || 'Anonymous',
-            isOnline: true,
-        };
-
-        await fs.writeFile(userPath, JSON.stringify(user, null, 2));
+        // Create user in the database
+        let user: App.User;
+        try {
+            user = await UserRepository.createUser({
+                username,
+                name: name || 'Anonymous',
+            });
+            
+            // Set isOnline flag
+            await UserRepository.updateUserOnlineStatus(username, true);
+            user.isOnline = true;
+        } catch (dbError) {
+            console.error('Failed to create user in database:', dbError);
+            return NextResponse.json({ error: 'Failed to create user in database' }, { status: 500 });
+        }
 
         // Create response with user data
         const response = NextResponse.json(user);
@@ -64,25 +66,23 @@ export async function PATCH(request: NextRequest) {
             return NextResponse.json({ error: 'username and name are required' }, { status: 400 });
         }
 
-        const usersDir = path.join(process.cwd(), 'DB', 'users');
-        const userPath = path.join(usersDir, `${username}.json`);
-
         // Check if user exists
-        try {
-            await fs.access(userPath);
-        } catch {
+        const existingUser = await UserRepository.getUserByUsername(username);
+        if (!existingUser) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        // Read existing user data
-        const userData = await fs.readFile(userPath, 'utf8');
-        const user = JSON.parse(userData) as App.User;
-
-        // Update name
-        user.name = name;
-
-        // Save updated user data
-        await fs.writeFile(userPath, JSON.stringify(user, null, 2));
+        // Update user in database
+        const success = await UserRepository.updateUser(username, { name });
+        if (!success) {
+            return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
+        }
+        
+        // Get updated user
+        const user = await UserRepository.getUserByUsername(username);
+        if (!user) {
+            return NextResponse.json({ error: 'Failed to retrieve updated user' }, { status: 500 });
+        }
 
         // Create response with updated user data
         const response = NextResponse.json(user);
@@ -116,23 +116,8 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'No user IDs provided' }, { status: 400 });
         }
 
-        const usersDir = path.join(process.cwd(), 'DB', 'users');
-        const users = await Promise.all(
-            ids.map(async (id) => {
-                try {
-                    const userPath = path.join(usersDir, `${id}.json`);
-                    const userData = await fs.readFile(userPath, 'utf8');
-                    return JSON.parse(userData) as App.User;
-                } catch {
-                    // Return basic user info if file doesn't exist
-                    return {
-                        username: id,
-                        name: 'Anonymous',
-                        isOnline: true,
-                    } as App.User;
-                }
-            })
-        );
+        // Get users from database
+        const users = await UserRepository.getUsersByUsernames(ids);
 
         return NextResponse.json(users);
     } catch (error) {

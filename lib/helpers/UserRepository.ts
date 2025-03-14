@@ -5,7 +5,7 @@ class UserRepository {
      * Create a new user
      */
     async createUser(user: { username: string; name: string }): Promise<App.User> {
-        await db.query('INSERT INTO users (username, name) VALUES (?, ?, ?)', [
+        await db.query('INSERT INTO users (username, name) VALUES (?, ?)', [
             user.username,
             user.name,
         ]);
@@ -62,6 +62,24 @@ class UserRepository {
         );
 
         return users.length > 0 ? users[0] : null;
+    }
+
+    /**
+     * Update a user
+     */
+    async updateUser(username: string, updates: { name?: string }): Promise<boolean> {
+        try {
+            if (updates.name) {
+                await db.query('UPDATE users SET name = ? WHERE username = ?', [
+                    updates.name,
+                    username,
+                ]);
+            }
+            return true;
+        } catch (error) {
+            console.error('Error updating user:', error);
+            return false;
+        }
     }
 }
 

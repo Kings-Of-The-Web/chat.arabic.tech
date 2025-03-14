@@ -1,8 +1,5 @@
-import { promises as fs } from 'node:fs';
-import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
-
-const DB_PATH = path.join(process.cwd(), 'DB', 'messages');
+import MessageRepository from '@/lib/helpers/MessageRepository';
 
 export async function PATCH(
     request: NextRequest,
@@ -20,50 +17,34 @@ export async function PATCH(
         }
 
         const body = await request.json();
-        const { isRead } = body;
+        const { isRead, username } = body;
 
-        if (typeof isRead !== 'boolean') {
+        if (typeof isRead !== 'boolean' || !username) {
             return NextResponse.json(
-                { error: 'Invalid value for isRead - must be a boolean' },
+                { error: 'Invalid request - must provide isRead (boolean) and username' },
                 { status: 400 }
             );
         }
 
-        const messagePath = path.join(DB_PATH, roomId, `${messageId}.json`);
-
-        // Check if directory exists
-        try {
-            await fs.access(path.dirname(messagePath));
-        } catch {
-            return NextResponse.json({ error: `Room ${roomId} not found` }, { status: 404 });
+        // Mark message as read
+        if (isRead) {
+            await MessageRepository.markMessagesAsRead([messageId], username);
         }
 
-        // Check if message exists
-        try {
-            await fs.access(messagePath);
-        } catch {
+        // Get updated message
+        const messages = await MessageRepository.getMessagesForRoom(roomId, username, 1, 0);
+        const message = messages.find(m => m.messageId === messageId);
+
+        if (!message) {
             return NextResponse.json(
                 { error: `Message ${messageId} not found in room ${roomId}` },
                 { status: 404 }
             );
         }
 
-        const messageData = await fs.readFile(messagePath, 'utf8');
-        const message = JSON.parse(messageData);
-
-        message.isRead = isRead;
-        if (isRead) {
-            message.isReadAt = new Date();
-        }
-
-        await fs.writeFile(messagePath, JSON.stringify(message, null, 2));
-
         return NextResponse.json(message);
     } catch (error) {
         console.error('Error updating message:', error);
-        if (error instanceof SyntaxError) {
-            return NextResponse.json({ error: 'Invalid message data format' }, { status: 400 });
-        }
         return NextResponse.json(
             { error: 'Internal server error while updating message' },
             { status: 500 }
