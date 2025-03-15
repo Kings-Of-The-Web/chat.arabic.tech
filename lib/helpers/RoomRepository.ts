@@ -91,9 +91,20 @@ class RoomRepository {
                 [roomId, username]
             );
             
-            // If user is already in the room, return true (success)
+            // If user is already in the room, update the joined_at timestamp
             if (existingUser.length > 0) {
-                console.log(`User ${username} is already in room ${roomId}`);
+                console.log(`User ${username} is already in room ${roomId}, updating joined_at timestamp`);
+                await db.query(
+                    'UPDATE room_users SET joined_at = CURRENT_TIMESTAMP WHERE room_id = ? AND username = ?',
+                    [roomId, username]
+                );
+                
+                // Add a joined event (using 'joined' instead of 'rejoined' as the events table only allows 'joined' and 'left')
+                await db.query(
+                    'INSERT INTO events (username, room_id, type) VALUES (?, ?, ?)',
+                    [username, roomId, 'joined']
+                );
+                
                 return true;
             }
             
@@ -115,6 +126,17 @@ class RoomRepository {
                 // If the error is a duplicate entry, the user is already in the room
                 if (insertError.code === 'ER_DUP_ENTRY') {
                     console.log(`User ${username} is already in room ${roomId} (caught duplicate)`);
+                    // Update the joined_at timestamp
+                    await db.query(
+                        'UPDATE room_users SET joined_at = CURRENT_TIMESTAMP WHERE room_id = ? AND username = ?',
+                        [roomId, username]
+                    );
+                    
+                    // Add a joined event (using 'joined' instead of 'rejoined')
+                    await db.query(
+                        'INSERT INTO events (username, room_id, type) VALUES (?, ?, ?)',
+                        [username, roomId, 'joined']
+                    );
                     return true;
                 }
                 // Otherwise, rethrow the error
