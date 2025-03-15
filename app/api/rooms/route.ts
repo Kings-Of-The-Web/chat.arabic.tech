@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import RoomRepository from '@/lib/helpers/RoomRepository';
 
 export async function POST(request: NextRequest) {
     try {
         // Create a new room with no initial users
         const room = await RoomRepository.createRoom([]);
-        
+
         return NextResponse.json({ roomId: room.roomId });
     } catch (error) {
         console.error('Failed to create room:', error);

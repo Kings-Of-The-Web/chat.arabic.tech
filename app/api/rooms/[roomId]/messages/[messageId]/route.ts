@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import MessageRepository from '@/lib/helpers/MessageRepository';
 
 export async function PATCH(
@@ -33,7 +34,7 @@ export async function PATCH(
 
         // Get updated message
         const messages = await MessageRepository.getMessagesForRoom(roomId, username, 1, 0);
-        const message = messages.find(m => m.messageId === messageId);
+        const message = messages.find((m) => m.messageId === messageId);
 
         if (!message) {
             return NextResponse.json(
