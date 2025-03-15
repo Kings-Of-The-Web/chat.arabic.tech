@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Users } from 'lucide-react';
 import { toast } from 'sonner';
