@@ -1,4 +1,7 @@
-export async function getMessagesByRoomId(roomId: string, username:string): Promise<App.Message[]> {
+export async function getMessagesByRoomId(
+    roomId: string,
+    username: string
+): Promise<App.Message[]> {
     const response = await fetch(`/api/rooms/${roomId}/messages?username=${username}`, {
         method: 'GET',
         headers: {

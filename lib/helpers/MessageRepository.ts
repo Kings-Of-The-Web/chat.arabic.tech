@@ -59,7 +59,7 @@ class MessageRepository {
         // Ensure limit and offset are numbers
         const limitNum = typeof limit === 'string' ? parseInt(limit) : limit;
         const offsetNum = typeof offset === 'string' ? parseInt(offset) : offset;
-        
+
         try {
             // Use a different approach for LIMIT and OFFSET
             const query = `
@@ -71,9 +71,9 @@ class MessageRepository {
                 ORDER BY m.timestamp DESC
                 LIMIT ${limitNum} OFFSET ${offsetNum}
             `;
-            
+
             const messages = await db.query<any[]>(query, [roomId, username]);
-            
+
             return messages.map((m) => ({
                 messageId: m.message_id,
                 username: m.username,

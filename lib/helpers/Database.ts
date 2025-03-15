@@ -30,9 +30,7 @@ class Database {
 
     public async query<T>(sql: string, params?: any[]): Promise<T> {
         try {
-            const [rows] = params ? 
-                await this.pool.query(sql, params) : 
-                await this.pool.query(sql);
+            const [rows] = params ? await this.pool.query(sql, params) : await this.pool.query(sql);
             return rows as T;
         } catch (error) {
             console.error('Database query error:', error);
