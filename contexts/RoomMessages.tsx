@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
 
 import { getMessagesByRoomId } from '@/lib/service/getMessagesByRoomId';
@@ -9,13 +9,13 @@ import { useWebSocket } from './WebSocket';
 interface RoomMessagesContextType {
     messages: App.Message[];
     isLoading: boolean;
-    isFetched: boolean;
+    messagesIsFetched: boolean;
 }
 
 const RoomMessagesContext = createContext<RoomMessagesContextType>({
     messages: [],
     isLoading: true,
-    isFetched: false,
+    messagesIsFetched: false,
 });
 
 export const useRoomMessages = () => useContext(RoomMessagesContext);
@@ -29,7 +29,7 @@ export function RoomMessagesProvider({
 }) {
     const [messages, setMessages] = useState<App.Message[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isFetched, setIsFetched] = useState(false);
+    const [messagesIsFetched, setMessagesIsFetched] = useState(false);
     const { lastMessage } = useWebSocket();
     const { user } = useUser();
 
@@ -38,12 +38,14 @@ export function RoomMessagesProvider({
             try {
                 const fetchedMessages = await getMessagesByRoomId(roomId, user?.username || '');
                 setMessages(fetchedMessages);
+                setMessagesIsFetched(true);
             } catch (error) {
                 console.error('Error fetching room messages:', error);
                 setMessages([]);
+                setMessagesIsFetched(false);
             } finally {
                 setIsLoading(false);
-                setIsFetched(true);
+                setMessagesIsFetched(true);
             }
         };
 
@@ -67,7 +69,7 @@ export function RoomMessagesProvider({
     }, [lastMessage, roomId]);
 
     return (
-        <RoomMessagesContext.Provider value={{ messages, isLoading, isFetched }}>
+        <RoomMessagesContext.Provider value={{ messages, isLoading, messagesIsFetched }}>
             {children}
         </RoomMessagesContext.Provider>
     );

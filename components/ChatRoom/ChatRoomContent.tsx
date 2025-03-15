@@ -62,8 +62,7 @@ export function ChatRoomContent() {
      * Update loading state based on both user joining and messages loading
      */
     useEffect(() => {
-        console.log(messages)
-        setIsLoading(!userJoined || messagesIsFetched);
+        setIsLoading(!(messagesIsFetched && userJoined));
     }, [userJoined, messages, messagesIsFetched]);
 
     if (isLoading) {
