@@ -9,11 +9,13 @@ import { useWebSocket } from './WebSocket';
 interface RoomMessagesContextType {
     messages: App.Message[];
     isLoading: boolean;
+    isFetched: boolean;
 }
 
 const RoomMessagesContext = createContext<RoomMessagesContextType>({
     messages: [],
     isLoading: true,
+    isFetched: false,
 });
 
 export const useRoomMessages = () => useContext(RoomMessagesContext);
@@ -27,6 +29,7 @@ export function RoomMessagesProvider({
 }) {
     const [messages, setMessages] = useState<App.Message[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isFetched, setIsFetched] = useState(false);
     const { lastMessage } = useWebSocket();
     const { user } = useUser();
 
@@ -40,6 +43,7 @@ export function RoomMessagesProvider({
                 setMessages([]);
             } finally {
                 setIsLoading(false);
+                setIsFetched(true);
             }
         };
 
@@ -63,7 +67,7 @@ export function RoomMessagesProvider({
     }, [lastMessage, roomId]);
 
     return (
-        <RoomMessagesContext.Provider value={{ messages, isLoading }}>
+        <RoomMessagesContext.Provider value={{ messages, isLoading, isFetched }}>
             {children}
         </RoomMessagesContext.Provider>
     );

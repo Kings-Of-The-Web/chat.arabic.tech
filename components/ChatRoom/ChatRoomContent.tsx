@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useRoomMessages } from '@/contexts/RoomMessages';
+
 import { useUser } from '@/contexts/UserContext';
 import { toast } from 'sonner';
 
@@ -13,12 +13,14 @@ import { MessageInput } from '@/components/ChatRoom/MessageInput';
 import { MessageList } from '@/components/ChatRoom/MessageList';
 import { Card } from '@/components/ui/card';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import {useRoomMessages} from "@/contexts/RoomMessages";
 
 export function ChatRoomContent() {
     ////////////////////////
     // State Variables
     ////////////////////////
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [userJoined, setUserJoined] = useState(false);
 
     ////////////////////////
     // Contexts
@@ -26,7 +28,7 @@ export function ChatRoomContent() {
     const params = useParams();
     const router = useRouter();
     const { user } = useUser();
-    const { messages } = useRoomMessages();
+    const { messages, messagesIsFetched } = useRoomMessages();
 
     ////////////////////////
     // Refs
@@ -36,13 +38,18 @@ export function ChatRoomContent() {
     /////////////////////////
     // Effects
     /////////////////////////
-    // Join room when component mounts
+    /**
+     * Joins the user to the current room.
+     *
+     * Run on component mount.
+     */
     useEffect(() => {
         const handleJoinRoom = async () => {
             if (!user?.username) return;
 
             try {
                 await joinRoom(roomId, user.username);
+                setUserJoined(true);
             } catch (error) {
                 toast.error('فشل في الانضمام إلى الغرفة');
                 router.push('/');
@@ -50,6 +57,14 @@ export function ChatRoomContent() {
         };
         handleJoinRoom();
     }, [roomId, user?.username, router]);
+
+    /**
+     * Update loading state based on both user joining and messages loading
+     */
+    useEffect(() => {
+        console.log(messages)
+        setIsLoading(!userJoined || messagesIsFetched);
+    }, [userJoined, messages, messagesIsFetched]);
 
     if (isLoading) {
         return (
