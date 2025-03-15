@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRoomMessages } from '@/contexts/RoomMessages';
+import { useUser } from '@/contexts/UserContext';
 import { useWebSocket } from '@/contexts/WebSocket';
 
 import { readMessage } from '@/lib/service/rooms/messages/readMessage';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageBubble } from './MessageBubble';
 import { NewMessageNotification } from './NewMessageNotification';
-import {useUser} from "@/contexts/UserContext";
 
 interface MessageListProps {
     currentUserId: string;
@@ -24,7 +24,7 @@ export function MessageList({ currentUserId }: MessageListProps) {
     // Contexts
     /////////////////////////
     const { messages } = useRoomMessages();
-    const {user} = useUser();
+    const { user } = useUser();
     const { isNewMessage, isOwnMessage, resetNewMessageState } = useWebSocket();
 
     /////////////////////////
@@ -39,7 +39,11 @@ export function MessageList({ currentUserId }: MessageListProps) {
                     if (message && !message.isRead && message.username !== currentUserId) {
                         console.log('Unread message visible:', message);
                         try {
-                            await readMessage(message.roomId, message.messageId, user?.username || '');
+                            await readMessage(
+                                message.roomId,
+                                message.messageId,
+                                user?.username || ''
+                            );
                         } catch (error) {
                             console.error('Failed to mark message as read:', error);
                         }

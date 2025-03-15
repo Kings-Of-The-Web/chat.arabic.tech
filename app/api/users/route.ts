@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import UserRepository from '@/lib/helpers/UserRepository';
+import UserRepository from '@/lib/utils/database/UserRepository';
 
 export async function POST(request: NextRequest) {
     try {

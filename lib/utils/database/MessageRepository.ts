@@ -143,9 +143,9 @@ class MessageRepository {
         `;
 
         const messages = await db.query<any[]>(query, [messageId, username]);
-        
+
         if (messages.length === 0) return null;
-        
+
         const m = messages[0];
         return {
             messageId: m.message_id,

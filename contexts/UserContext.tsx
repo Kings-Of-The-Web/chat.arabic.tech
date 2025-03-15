@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { Cookies } from '@/lib/helpers/Cookies';
+import { Cookies } from '@/lib/utils/Cookies';
 
 interface UserContextType {
     user: App.User | null;

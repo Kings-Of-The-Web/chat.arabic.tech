@@ -1,6 +1,6 @@
 'use client';
 
-import { Cookies } from '../../helpers/Cookies';
+import { Cookies } from '@/lib/utils/Cookies';
 
 /**
  * Checks if a user is logged in by looking for the ArabicTech_User cookie

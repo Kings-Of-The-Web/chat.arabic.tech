@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import RoomRepository from '@/lib/helpers/RoomRepository';
+import RoomRepository from '@/lib/utils/database/RoomRepository';
 
 export async function POST(request: NextRequest, { params }: { params: { roomId: string } }) {
     try {

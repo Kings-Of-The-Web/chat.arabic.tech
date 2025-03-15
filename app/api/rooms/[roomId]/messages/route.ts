@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import MessageRepository from '@/lib/helpers/MessageRepository';
+import MessageRepository from '@/lib/utils/database/MessageRepository';
 
 export async function GET(request: NextRequest, { params }: { params: { roomId: string } }) {
     try {

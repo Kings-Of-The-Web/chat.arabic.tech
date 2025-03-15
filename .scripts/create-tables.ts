@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-import db from '../lib/helpers/Database';
+import db from '@/lib/utils/database/Database';
 
 // Load environment variables
 dotenv.config();

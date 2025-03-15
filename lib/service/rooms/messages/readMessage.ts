@@ -1,4 +1,8 @@
-export async function readMessage(roomId: string, messageId: string, username: string): Promise<App.Message> {
+export async function readMessage(
+    roomId: string,
+    messageId: string,
+    username: string
+): Promise<App.Message> {
     const response = await fetch(`/api/rooms/${roomId}/messages/${messageId}`, {
         method: 'PATCH',
         headers: {

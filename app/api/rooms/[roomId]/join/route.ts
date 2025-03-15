@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import RoomRepository from '@/lib/helpers/RoomRepository';
-import UserRepository from '@/lib/helpers/UserRepository';
+import RoomRepository from '@/lib/utils/database/RoomRepository';
+import UserRepository from '@/lib/utils/database/UserRepository';
 
 export async function POST(request: NextRequest, { params }: { params: { roomId: string } }) {
     try {
@@ -35,7 +35,6 @@ export async function POST(request: NextRequest, { params }: { params: { roomId:
                 { status: 404 }
             );
         }
-
 
         // Add user to room
         const success = await RoomRepository.addUserToRoom(roomId, username);

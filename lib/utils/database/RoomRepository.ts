@@ -90,24 +90,27 @@ class RoomRepository {
                 'SELECT * FROM room_users WHERE room_id = ? AND username = ?',
                 [roomId, username]
             );
-            
+
             // If user is already in the room, update the joined_at timestamp
             if (existingUser.length > 0) {
-                console.log(`User ${username} is already in room ${roomId}, updating joined_at timestamp`);
+                console.log(
+                    `User ${username} is already in room ${roomId}, updating joined_at timestamp`
+                );
                 await db.query(
                     'UPDATE room_users SET joined_at = CURRENT_TIMESTAMP WHERE room_id = ? AND username = ?',
                     [roomId, username]
                 );
-                
+
                 // Add a joined event (using 'joined' instead of 'rejoined' as the events table only allows 'joined' and 'left')
-                await db.query(
-                    'INSERT INTO events (username, room_id, type) VALUES (?, ?, ?)',
-                    [username, roomId, 'joined']
-                );
-                
+                await db.query('INSERT INTO events (username, room_id, type) VALUES (?, ?, ?)', [
+                    username,
+                    roomId,
+                    'joined',
+                ]);
+
                 return true;
             }
-            
+
             // Try to insert the user into the room
             try {
                 await db.transaction(async (connection) => {
@@ -131,7 +134,7 @@ class RoomRepository {
                         'UPDATE room_users SET joined_at = CURRENT_TIMESTAMP WHERE room_id = ? AND username = ?',
                         [roomId, username]
                     );
-                    
+
                     // Add a joined event (using 'joined' instead of 'rejoined')
                     await db.query(
                         'INSERT INTO events (username, room_id, type) VALUES (?, ?, ?)',
@@ -187,9 +190,7 @@ class RoomRepository {
      * Get all rooms
      */
     async getAllRooms(): Promise<App.Room[]> {
-        const rooms = await db.query<{ room_id: string }[]>(
-            'SELECT room_id FROM rooms'
-        );
+        const rooms = await db.query<{ room_id: string }[]>('SELECT room_id FROM rooms');
 
         const roomDetails = await Promise.all(
             rooms.map(({ room_id }) => this.getRoomById(room_id))

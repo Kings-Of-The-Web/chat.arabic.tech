@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-
+import { useRoomMessages } from '@/contexts/RoomMessages';
 import { useUser } from '@/contexts/UserContext';
 import { toast } from 'sonner';
 
@@ -13,7 +13,6 @@ import { MessageInput } from '@/components/ChatRoom/MessageInput';
 import { MessageList } from '@/components/ChatRoom/MessageList';
 import { Card } from '@/components/ui/card';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import {useRoomMessages} from "@/contexts/RoomMessages";
 
 export function ChatRoomContent() {
     ////////////////////////
