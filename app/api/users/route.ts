@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import UserRepository from '@/lib/helpers/UserRepository';
 
 export async function POST(request: NextRequest) {
@@ -18,20 +19,31 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'username is required' }, { status: 400 });
         }
 
-        // Create user in the database
-        let user: App.User;
-        try {
-            user = await UserRepository.createUser({
-                username,
-                name: name || 'Anonymous',
-            });
-            
-            // Set isOnline flag
+        // Check if user already exists
+        let user = await UserRepository.getUserByUsername(username);
+
+        if (user) {
+            // User exists, just update their online status
             await UserRepository.updateUserOnlineStatus(username, true);
             user.isOnline = true;
-        } catch (dbError) {
-            console.error('Failed to create user in database:', dbError);
-            return NextResponse.json({ error: 'Failed to create user in database' }, { status: 500 });
+        } else {
+            // Create new user in the database
+            try {
+                user = await UserRepository.createUser({
+                    username,
+                    name: name || 'Anonymous',
+                });
+
+                // Set isOnline flag
+                await UserRepository.updateUserOnlineStatus(username, true);
+                user.isOnline = true;
+            } catch (dbError) {
+                console.error('Failed to create user in database:', dbError);
+                return NextResponse.json(
+                    { error: 'Failed to create user in database' },
+                    { status: 500 }
+                );
+            }
         }
 
         // Create response with user data
@@ -77,7 +89,7 @@ export async function PATCH(request: NextRequest) {
         if (!success) {
             return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
         }
-        
+
         // Get updated user
         const user = await UserRepository.getUserByUsername(username);
         if (!user) {
