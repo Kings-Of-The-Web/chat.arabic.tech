@@ -129,6 +129,34 @@ class MessageRepository {
         const placeholders = messageIds.map(() => '?').join(',');
         await db.query(`DELETE FROM messages WHERE message_id IN (${placeholders})`, messageIds);
     }
+
+    /**
+     * Get a message by ID
+     */
+    async getMessageById(messageId: string, username: string): Promise<App.Message | null> {
+        const query = `
+            SELECT m.message_id, m.username, m.room_id, m.body, m.timestamp, 
+            mrs.is_read, mrs.read_at as isReadAt
+            FROM messages m
+            JOIN message_read_status mrs ON m.message_id = mrs.message_id
+            WHERE m.message_id = ? AND mrs.username = ?
+        `;
+
+        const messages = await db.query<any[]>(query, [messageId, username]);
+        
+        if (messages.length === 0) return null;
+        
+        const m = messages[0];
+        return {
+            messageId: m.message_id,
+            username: m.username,
+            roomId: m.room_id,
+            body: m.body,
+            timestamp: m.timestamp,
+            isRead: Boolean(m.is_read),
+            isReadAt: m.isReadAt,
+        };
+    }
 }
 
 export default new MessageRepository();

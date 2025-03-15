@@ -32,9 +32,8 @@ export async function PATCH(
             await MessageRepository.markMessagesAsRead([messageId], username);
         }
 
-        // Get updated message
-        const messages = await MessageRepository.getMessagesForRoom(roomId, username, 1, 0);
-        const message = messages.find((m) => m.messageId === messageId);
+        // Get updated message using the new method
+        const message = await MessageRepository.getMessageById(messageId, username);
 
         if (!message) {
             return NextResponse.json(

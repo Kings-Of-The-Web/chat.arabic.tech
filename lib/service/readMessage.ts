@@ -1,4 +1,4 @@
-export async function readMessage(roomId: string, messageId: string): Promise<App.Message> {
+export async function readMessage(roomId: string, messageId: string, username: string): Promise<App.Message> {
     const response = await fetch(`/api/rooms/${roomId}/messages/${messageId}`, {
         method: 'PATCH',
         headers: {
@@ -6,6 +6,7 @@ export async function readMessage(roomId: string, messageId: string): Promise<Ap
         },
         body: JSON.stringify({
             isRead: true,
+            username,
         }),
     });
 
@@ -16,6 +17,5 @@ export async function readMessage(roomId: string, messageId: string): Promise<Ap
         );
     }
 
-    const message = await response.json();
-    return message;
+    return await response.json();
 }
