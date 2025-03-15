@@ -4,7 +4,7 @@ import { useWebSocket } from '@/contexts/WebSocket';
 import { Send } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
-import { saveMessage } from '@/lib/service/saveMessage';
+import { saveMessage } from '@/lib/service/rooms/messages/saveMessage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 

@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
 import { Cookies } from '@/lib/helpers/Cookies';
-import { isLoggedIn } from '@/lib/service/isLoggedIn';
 
 interface UserContextType {
     user: App.User | null;

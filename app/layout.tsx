@@ -5,7 +5,6 @@ import localFont from 'next/font/local';
 import { UserContextProvider } from '@/contexts/UserContext';
 
 import { isLoggedInServer } from '@/lib/service';
-import { isLoggedIn } from '@/lib/service/isLoggedIn';
 
 const cabinet = localFont({
     src: [

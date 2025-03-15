@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { getRoom } from '@/lib/service/getRoom';
+import { getRoom } from '@/lib/service/rooms/getRoom';
 
 interface RoomUsersContextType {
     users: App.User[];

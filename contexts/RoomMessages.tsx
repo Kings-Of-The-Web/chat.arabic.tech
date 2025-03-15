@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
 
-import { getMessagesByRoomId } from '@/lib/service/getMessagesByRoomId';
+import { getMessagesByRoomId } from '@/lib/service/rooms/getMessagesByRoomId';
 import { useWebSocket } from './WebSocket';
 
 interface RoomMessagesContextType {

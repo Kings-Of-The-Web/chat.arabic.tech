@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { createRoom } from '@/lib/service/createRoom';
+import { createRoom } from '@/lib/service/rooms/createRoom';
 import { Card } from '@/components/ui/card';
 
 export const CreateRoomCard = () => {

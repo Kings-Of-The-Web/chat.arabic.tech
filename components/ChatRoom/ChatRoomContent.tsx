@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useUser } from '@/contexts/UserContext';
 import { toast } from 'sonner';
 
-import { joinRoom } from '@/lib/service/joinRoom';
+import { joinRoom } from '@/lib/service/rooms/joinRoom';
 import { ActiveUsersSidebar } from '@/components/ChatRoom/ActiveUsersSidebar';
 import { ChatRoomHeader } from '@/components/ChatRoom/ChatRoomHeader';
 import { MessageInput } from '@/components/ChatRoom/MessageInput';

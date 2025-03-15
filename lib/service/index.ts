@@ -1,18 +1,18 @@
 // Auth services
-export { isLoggedIn } from './isLoggedIn';
-export { isLoggedInServer } from './isLoggedInServer';
+export { isLoggedIn } from './auth/isLoggedIn';
+export { isLoggedInServer } from './auth/isLoggedInServer';
 
 // User services
-export { createUser } from './createUser';
-export { getUsersByIds } from './getUsersByIds';
+export { createUser } from './users/createUser';
+export { getUsersByIds } from './users/getUsersByIds';
 
 // Room services
-export { createRoom } from './createRoom';
-export { getRoom } from './getRoom';
-export { joinRoom } from './joinRoom';
-export { leaveRoom } from './leaveRoom';
+export { createRoom } from './rooms/createRoom';
+export { getRoom } from './rooms/getRoom';
+export { joinRoom } from './rooms/joinRoom';
+export { leaveRoom } from './rooms/leaveRoom';
 
 // Message services
-export { saveMessage } from './saveMessage';
-export { readMessage } from './readMessage';
-export { getMessagesByRoomId } from './getMessagesByRoomId';
+export { saveMessage } from './rooms/messages/saveMessage';
+export { readMessage } from './rooms/messages/readMessage';
+export { getMessagesByRoomId } from './rooms/getMessagesByRoomId';

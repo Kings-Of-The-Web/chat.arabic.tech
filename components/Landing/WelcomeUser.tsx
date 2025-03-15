@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@/contexts/UserContext';
 import { toast } from 'sonner';
 
-import { createUser } from '@/lib/service/createUser';
+import { createUser } from '@/lib/service/users/createUser';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 

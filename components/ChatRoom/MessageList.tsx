@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRoomMessages } from '@/contexts/RoomMessages';
 import { useWebSocket } from '@/contexts/WebSocket';
 
-import { readMessage } from '@/lib/service/readMessage';
+import { readMessage } from '@/lib/service/rooms/messages/readMessage';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageBubble } from './MessageBubble';
 import { NewMessageNotification } from './NewMessageNotification';
