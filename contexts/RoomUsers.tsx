@@ -1,10 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useWebSocket } from '@/contexts/WebSocket';
 
 import { getRoom } from '@/lib/service/getRoom';
-import { getUsersByIds } from '@/lib/service/getUsersByIds';
 
 interface RoomUsersContextType {
     users: App.User[];
@@ -27,23 +25,13 @@ export function RoomUsersProvider({
 }) {
     const [users, setUsers] = useState<App.User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const { lastMessage } = useWebSocket();
-
-    useEffect(() => {
-        if (lastMessage?.type === 'users_update') {
-            setUsers(lastMessage.users);
-        }
-    }, [lastMessage]);
 
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const room = await getRoom(roomId);
+                const room = (await getRoom(roomId)) as App.Room;
                 if (room.users) {
                     setUsers(room.users);
-                } else {
-                    const users = await getUsersByIds(room.usernames);
-                    setUsers(users);
                 }
             } catch (error) {
                 console.error('Error fetching room users:', error);

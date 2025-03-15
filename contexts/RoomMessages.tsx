@@ -1,10 +1,10 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useUser } from '@/contexts/UserContext';
 
 import { getMessagesByRoomId } from '@/lib/service/getMessagesByRoomId';
 import { useWebSocket } from './WebSocket';
-import {useUser} from "@/contexts/UserContext";
 
 interface RoomMessagesContextType {
     messages: App.Message[];
@@ -28,7 +28,7 @@ export function RoomMessagesProvider({
     const [messages, setMessages] = useState<App.Message[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { lastMessage } = useWebSocket();
-    const {user} = useUser();
+    const { user } = useUser();
 
     useEffect(() => {
         const fetchMessages = async () => {
