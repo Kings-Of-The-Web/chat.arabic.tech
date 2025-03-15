@@ -9,7 +9,11 @@
         "lint": "next lint",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "db:setup": "ts-node --project tsconfig.scripts.json .scripts/setup-db.ts"
+        "db:setup": "ts-node --project tsconfig.scripts.json .scripts/setup-db.ts",
+        "db:migrate:create": "ts-node --project tsconfig.scripts.json .scripts/migration-manager.ts create",
+        "db:migrate:run": "ts-node --project tsconfig.scripts.json .scripts/migration-manager.ts run",
+        "db:migrate:rollback": "ts-node --project tsconfig.scripts.json .scripts/migration-manager.ts rollback",
+        "db:migrate:status": "ts-node --project tsconfig.scripts.json .scripts/migration-manager.ts status"
     },
     "dependencies": {
         "@hookform/resolvers": "^3.9.0",
